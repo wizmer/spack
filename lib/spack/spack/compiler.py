@@ -263,8 +263,7 @@ class Compiler(object):
         suffixes = [''] + cls.suffixes
 
         def check_cmp_key(check):
-            name = os.path.basename(check[2])
-            idx = compiler_names.index(name)
+            idx = compiler_names.index(check[2])
             return idx
 
         checks = []
