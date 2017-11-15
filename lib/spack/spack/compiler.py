@@ -285,7 +285,6 @@ class Compiler(object):
                     if match:
                         key = (full_path,) + match.groups()
                         dir_checks.append(key)
-                        print key
 
             # sort dir_checks by compiler name order
             # this allows us to prioritize compiler names in subclass
