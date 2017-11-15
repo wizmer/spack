@@ -180,15 +180,21 @@ class TestCompilerCommand(object):
         spack.cmd.compiler.compiler_find(args)
 
         # Ensure new compiler is from the first path passed
-        new_compilers = set(spack.compilers.all_compiler_specs())
-        new_compiler = new_compilers - old_compilers
+        new_all_compilers = set(spack.compilers.all_compiler_specs())
+        new_compilers = new_all_compilers - old_compilers
 
         new_comp = spack.compilers.compilers_for_spec('gcc@%s'
                                                       % test_multiple_version)
         assert mock_two_compiler_dirs[0] in new_comp[0].cc
         assert any(c.version == Version(test_multiple_version)
-                   for c in new_compiler)
+                   for c in new_compilers)
 
+        # sorting to avoid gcc@4.8 removing gcc@4.8-spacktest and causing error
+        for compiler in sorted(new_compilers, reverse=True):
+            rm_args = spack.util.pattern.Bunch(
+                all=True, compiler_spec=compiler, add_paths=[], scope=None
+            )
+            spack.cmd.compiler.compiler_remove(rm_args)
 
     def test_compiler_add_multiple_names(self, mock_pgi_dir):
         old_compilers = set(spack.compilers.all_compiler_specs())
@@ -210,3 +216,9 @@ class TestCompilerCommand(object):
         assert 'pgfortran' in new_comp[0].f77
         assert 'pgfortran' in new_comp[0].fc
         assert any(c.version == Version(test_pgi_version) for c in new_compiler)
+
+        for compiler in new_compiler:
+            rm_args = spack.util.pattern.Bunch(
+                all=True, compiler_spec=compiler, add_paths=[], scope=None
+            )
+            spack.cmd.compiler.compiler_remove(rm_args)
