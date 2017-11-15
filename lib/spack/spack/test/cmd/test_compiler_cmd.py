@@ -36,6 +36,7 @@ test_multiple_version = '4.8-spacktest'
 test_pgi_version = '0.0'
 test_pgi_version_string = 'pgi 0.0-0 pgi target on pgispacktest'
 
+
 @pytest.fixture()
 def mock_compiler_dir(tmpdir):
     """Return a directory containing a fake, but detectable compiler."""
@@ -63,6 +64,7 @@ done
     gcc_path.copy(gfortran_path, mode=True)
 
     return str(tmpdir)
+
 
 @pytest.fixture()
 def mock_two_compiler_dirs(tmpdir):
@@ -106,6 +108,7 @@ done
 
     return [str(tmpdir1), str(tmpdir2)]
 
+
 @pytest.fixture()
 def mock_pgi_dir(tmpdir):
     """Return a directory containing a fake, but detectable pgi compiler,
@@ -138,6 +141,7 @@ done
     pgcc_path.copy(pgf90_path, mode=True)
 
     return str(tmpdir)
+
 
 @pytest.mark.usefixtures('config', 'builtin_mock')
 class TestCompilerCommand(object):
@@ -209,15 +213,15 @@ class TestCompilerCommand(object):
 
         # Ensure new compiler is in there and has newest pgi names
         new_compilers = set(spack.compilers.all_compiler_specs())
-        new_compiler = new_compilers - old_compilers
+        n_compiler = new_compilers - old_compilers
 
         new_comp = spack.compilers.compilers_for_spec('pgi@%s'
                                                       % test_pgi_version)
         assert 'pgfortran' in new_comp[0].f77
         assert 'pgfortran' in new_comp[0].fc
-        assert any(c.version == Version(test_pgi_version) for c in new_compiler)
+        assert any(c.version == Version(test_pgi_version) for c in n_compiler)
 
-        for compiler in new_compiler:
+        for compiler in n_compiler:
             rm_args = spack.util.pattern.Bunch(
                 all=True, compiler_spec=compiler, add_paths=[], scope=None
             )
