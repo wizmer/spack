@@ -263,7 +263,7 @@ class Compiler(object):
         suffixes = [''] + cls.suffixes
 
         def check_cmp_key(check):
-            name = os.path.basename(check[0])
+            name = os.path.basename(check[2])
             idx = compiler_names.index(name)
             return idx
 
@@ -280,12 +280,13 @@ class Compiler(object):
 
                 prod = itertools.product(prefixes, compiler_names, suffixes)
                 for pre, name, suf in prod:
-                    regex = r'^(%s)%s(%s)$' % (pre, re.escape(name), suf)
+                    regex = r'^(%s)(%s)(%s)$' % (pre, re.escape(name), suf)
 
                     match = re.match(regex, exe)
                     if match:
                         key = (full_path,) + match.groups()
                         dir_checks.append(key)
+                        print key
 
             # sort dir_checks by compiler name order
             # this allows us to prioritize compiler names in subclass
@@ -294,7 +295,7 @@ class Compiler(object):
 
         def check(key):
             try:
-                full_path, prefix, suffix = key
+                full_path, prefix, name, suffix = key
                 version = detect_version(full_path)
                 return (version, prefix, suffix, full_path)
             except ProcessError as e:
