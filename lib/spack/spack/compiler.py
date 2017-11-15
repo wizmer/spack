@@ -262,8 +262,14 @@ class Compiler(object):
         prefixes = [''] + cls.prefixes
         suffixes = [''] + cls.suffixes
 
+        def check_cmp_key(check):
+            name = os.path.basename(check[0])
+            idx = compiler_names.index(name)
+            return idx
+
         checks = []
         for directory in path:
+            dir_checks = []
             if not (os.path.isdir(directory) and
                     os.access(directory, os.R_OK | os.X_OK)):
                 continue
@@ -279,7 +285,12 @@ class Compiler(object):
                     match = re.match(regex, exe)
                     if match:
                         key = (full_path,) + match.groups()
-                        checks.append(key)
+                        dir_checks.append(key)
+
+            # sort dir_checks by compiler name order
+            # this allows us to prioritize compiler names in subclass
+            dir_checks = sorted(dir_checks, key=check_cmp_key)
+            checks.extend(dir_checks)
 
         def check(key):
             try:
