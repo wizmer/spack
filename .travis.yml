@@ -7,7 +7,6 @@ branches:
     - master
     - develop
     - /^releases\/.*$/
-    - features/ccache
 
 #=============================================================================
 # Build matrix
