@@ -114,7 +114,9 @@ addons:
       - perl
       - perl-base
 
-cache: pip
+cache:
+  - ccache
+  - pip
 
 # Work around Travis's lack of support for Python on OSX
 before_install:
@@ -122,8 +124,10 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew ls --versions python > /dev/null || brew install python; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew ls --versions gcc    > /dev/null || brew install gcc;    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew ls --versions gnupg2 > /dev/null || brew install gnupg2; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew ls --versions ccache > /dev/null || brew install ccache; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then virtualenv venv; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
+  - ccache -z
 
 # Install various dependencies
 install:
@@ -152,6 +156,7 @@ script: share/spack/qa/run-$TEST_SUITE-tests
 
 after_success:
   - codecov --env PY_VERSION
+  - ccache -s
 
 #=============================================================================
 # Notifications
