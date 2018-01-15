@@ -159,7 +159,6 @@ script:
   - if [[ "$COVERAGE" == "true" ]]; then codecov --env PY_VERSION --required ; fi
 
 after_success:
-  - codecov --env PY_VERSION
   - ccache -s
 
 #=============================================================================
