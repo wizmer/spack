@@ -203,8 +203,8 @@ class Openmpi(AutotoolsPackage):
     provides('mpi@:3.0', when='@1.7.5:')
     provides('mpi@:3.1', when='@2.0.0:')
 
-    depends_on('hwloc')
-    depends_on('hwloc +cuda', when='+cuda')
+    depends_on('hwloc@1.8:')
+    depends_on('hwloc@1.8: +cuda', when='+cuda')
     depends_on('java', when='+java')
     depends_on('sqlite', when='+sqlite3@:1.11')
     depends_on('ucx', when='+ucx')
@@ -249,6 +249,14 @@ class Openmpi(AutotoolsPackage):
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
+
+    def setup_environment(self, spack_env, run_env):
+        ''' often we use external mpich/openmpi
+            packages and by defualt they are using system clang.
+            we need to set compiler here to avoid link errors
+        '''
+        run_env.set('OMPI_CC', self.compiler.cc)
+        run_env.set('OMPI_CXX', self.compiler.cxx)
 
     def setup_dependent_package(self, module, dependent_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
