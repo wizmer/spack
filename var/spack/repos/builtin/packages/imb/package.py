@@ -23,31 +23,34 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
+from shutil import copyfile
+from shutil import copymode
+import sys
+import os
 
 
-class AllineaForge(Package):
-    """Allinea Forge is the complete toolsuite for software development - with
-    everything needed to debug, profile, optimize, edit and build C, C++ and
-    Fortran applications on Linux for high performance - from single threads
-    through to complex parallel HPC codes with MPI, OpenMP, threads or CUDA."""
+class Imb(MakefilePackage):
+    """Intel MPI Benchmark"""
 
-    homepage = "http://www.allinea.com/products/develop-allinea-forge"
+    homepage = "https://github.com/intel/mpi-benchmarks.git"
+    url      = "https://github.com/intel/mpi-benchmarks.git"
 
-    version('6.0', 'c85fec6d01680b5b46fea80111186244')
-    version('7.0', 'b70f4b140a71a5db0791d44684ac6cb5')
+    version('master',  git=url)
 
-    # Licensing
-    license_required = True
-    license_comment = '#'
-    license_files = ['licences/Licence']
-    license_vars = ['ALLINEA_LICENCE_FILE', 'ALLINEA_LICENSE_FILE']
-    license_url = 'http://www.allinea.com/user-guide/forge/Installation.html'
+    depends_on('mpi')
 
-    def url_for_version(self, version):
-        # TODO: add support for other architectures/distributions
-        url = "http://content.allinea.com/downloads/"
-        return url + "arm-forge-latest-Redhat-%s-x86_64.tar" % version
+    def edit(self, spec, prefix):
+        os.chdir("src")
+        makefile = FileFilter('make_ict')
+        makefile.filter('CC          = .*', 'CC = %s' %
+                            self.spec['mpi'].mpicc)
+
+    def build(self, spec, prefix):
+        make()
 
     def install(self, spec, prefix):
-        bash = which("bash")
-        bash('./textinstall.sh', '--accept-licence', prefix)
+        mkdirp(prefix.bin)
+        imb = join_path(prefix.bin, "IMB-MPI1")
+        copyfile("IMB-MPI1", imb)
+        chmod = which('chmod')
+        chmod('+x', imb)
