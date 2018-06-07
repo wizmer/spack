@@ -20,6 +20,12 @@ class Mvapich2(AutotoolsPackage):
     version('2.3rc2', '6fcf22fe2a16023b462ef57614daa357')
     version('2.3rc1', '386d79ae36b2136d203826465ad8b6cc')
     version('2.3a', '87c3fbf8a755b53806fa9ecb21453445')
+
+    # hpe-ddn specific external versions for ime
+    version('ime', 'nonexistenthash')
+
+    # Prefer the latest stable release
+    version('2.3', sha256='01d5fb592454ddd9ecc17e91c8983b6aea0e7559aa38f410b111c8ef385b50dd', preferred=True)
     version('2.2', '939b65ebe5b89a5bc822cdab0f31f96e')
     version('2.1', '0095ceecb19bbb7fb262131cb9c2cdd6')
     version('2.0', '9fbb68a4111a8b6338e476dc657388b4')

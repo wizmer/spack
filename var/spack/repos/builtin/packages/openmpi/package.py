@@ -68,6 +68,9 @@ class Openmpi(AutotoolsPackage):
     # Current
     version('4.0.1', sha256='cce7b6d20522849301727f81282201d609553103ac0b09162cf28d102efb9709')  # libmpi.so.40.20.1
 
+    # hpe-ddn specific external versions for ime
+    version('ime', 'nonexistenthash')
+
     # Still supported
     version('4.0.0', sha256='2f0b8a36cfeb7354b45dda3c5425ef8393c9b04115570b615213faaa3f97366b')  # libmpi.so.40.20.0
     version('3.1.4', preferred=True, sha256='957b5547bc61fd53d08af0713d0eaa5cd6ee3d58')  # libmpi.so.40.10.4
