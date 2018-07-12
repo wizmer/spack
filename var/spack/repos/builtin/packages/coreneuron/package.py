@@ -40,6 +40,9 @@ class Coreneuron(CMakePackage):
     version('hippocampus', git=url, submodules=True)
     version('plasticity', git=url, preferred=True, submodules=True)
 
+    # TODO: for performance benchmarking
+    version('perfmodels', git=url, submodules=True)
+
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
     variant('knl', default=False, description="Enable KNL specific flags")
@@ -60,6 +63,9 @@ class Coreneuron(CMakePackage):
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')
 
+    # neuron models for benchmarking
+    depends_on('neuronperfmodels@coreneuron', when='@perfmodels')
+
     @run_before('build')
     def profiling_wrapper_on(self):
         os.environ["USE_PROFILER_WRAPPER"] = "1"
@@ -72,8 +78,11 @@ class Coreneuron(CMakePackage):
         flags = "-g -O2"
         if 'bgq' in self.spec.architecture and '%xl' in self.spec:
             flags = '-O3 -qtune=qp -qarch=qp -q64 -qhot=simd -qsmp -qthreaded -g'
-        if '+knl' in self.spec and '%intel' in self.spec:
-            flags = '-g -xMIC-AVX512 -O2 -qopt-report=5'
+        if '%intel' in self.spec:
+            if '+knl' in self.spec:
+                flags = '-g -xMIC-AVX512 -O2 -qopt-report=5'
+            else:
+                flags = '-g -O2 -xHost -qopt-report=5'
         if '+debug' in self.spec:
             flags = '-g -O0'
         if '+profile' in self.spec:
@@ -124,6 +133,9 @@ class Coreneuron(CMakePackage):
             modfile_list = '%s/coreneuron_modlist.txt' % modlib_dir
             options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
             options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
+
+        if spec.satisfies('@perfmodels'):
+            options.append('-DADDITIONAL_MECHPATH=%s' % self.nrnperf_modfiles)
 
         return options
 
