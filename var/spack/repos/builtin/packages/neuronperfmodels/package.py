@@ -38,7 +38,8 @@ class Neuronperfmodels(Package):
     depends_on('zlib', when='@neuron')
     depends_on('mpi', when='@neuron')
     depends_on('cmake', when='@neuron', type='build')
-    depends_on('tau', when='+profile')
+    depends_on('neuron+profile', when='@neuron+profile')
+    depends_on('tau~openmp', when='@neuron+profile')
 
     def profiling_wrapper_on(self):
         if self.spec.satisfies('+profile'):
@@ -143,11 +144,30 @@ class Neuronperfmodels(Package):
         dest = '%s/simtestdata' % prefix
         install_tree(src, dest, symlinks=False)
         build_dir = '%s/build' % dest
+        src_target_file = '%s/circuitBuilding_1000neurons/default_user.target' % src
+        dest_target_file = '%s/user.target' % dest
+        shutil.copy(src_target_file, dest_target_file)
 
         with working_dir(build_dir, create=True):
             cmake('..')
-            blueconfig = 'circuitBuilding_1000neurons/BlueConfig'
-            shutil.copy(blueconfig, '../')
+            shutil.copy('circuitBuilding_1000neurons/BlueConfig', '../')
+
+    def build_bbp_common(self, dirname, prefix):
+        src = '%s/%s' % (self.stage.source_path, dirname)
+        dest = '%s/%s' % (prefix, dirname)
+        install_tree(src, dest, symlinks=False)
+
+    def build_somatosensory_v5(self, spec, prefix):
+        self.build_bbp_common(self.SOM_V5_DIR, prefix)
+
+    def build_somatosensory_v5_plastic(self, spec, prefix):
+        self.build_bbp_common(self.SOM_V5_PLASTIC_DIR, prefix)
+
+    def build_somatosensory_v6(self, spec, prefix):
+        self.build_bbp_common(self.SOM_V6_DIR, prefix)
+
+    def build_hippocampus_v5(self, spec, prefix):
+        self.build_bbp_common(self.HIPPO_V5_DIR, prefix)
 
     def install(self, spec, prefix):
         with working_dir(prefix):
@@ -163,6 +183,10 @@ class Neuronperfmodels(Package):
                 self.build_ringtest(spec, prefix)
                 self.build_tqperf(spec, prefix)
                 self.build_bbp_simtestdata(spec, prefix)
+                self.build_somatosensory_v5(spec, prefix)
+                self.build_somatosensory_v5_plastic(spec, prefix)
+                self.build_somatosensory_v6(spec, prefix)
+                self.build_hippocampus_v5(spec, prefix)
                 self.profiling_wrapper_off()
 
     def setup_environment(self, spack_env, run_env):
@@ -170,6 +194,11 @@ class Neuronperfmodels(Package):
         modfiles = '%s/modfiles' % prefix
         run_env.set('NRNPERF_MODFILES', modfiles)
         run_env.set('NRNPERF_HOME', prefix)
+
+        self.SOM_V5_DIR = "somatosensory-v5"
+        self.SOM_V5_PLASTIC_DIR = "somatosensory-v5-plasticity"
+        self.SOM_V6_DIR = "somatosensory-v6"
+        self.HIPPO_V5_DIR = "hippocampus-v5"
 
         if self.spec.satisfies('@neuron'):
             archdir = self.neuron_archdir
@@ -189,14 +218,27 @@ class Neuronperfmodels(Package):
             rd_hoc_path = '%s/reduced_dentate:%s/reduced_dentate/templates' % (prefix, prefix)
             tq_hoc_path = '%s/tqperf' % prefix
 
+            # home directories for every sim type
+            v5_testdata_home = '%s/simtestdata/' % prefix
+            som_v5_home = '%s/somatosensory-v5/' % prefix
+            som_v5_plastic_home = '%s/somatosensory-v5-plasticity/' % prefix
+            som_v6_home = '%s/somatosensory-v6/' % prefix
+            hippo_v5_home = '%s/hippocampus-v5/' % prefix
+
+            run_env.set('SOM_V5_TEST_DIR', v5_testdata_home)
+            run_env.set('SOM_V5_DIR', som_v5_home)
+            run_env.set('SOM_V5_PLASTIC_DIR', som_v5_plastic_home)
+            run_env.set('SOM_V6_DIR', som_v6_home)
+            run_env.set('HIPPO_V5_DIR', hippo_v5_home)
+
             run_env.set('BBP_EXE', neurodamus_exe)
             run_env.set('TRAUB_EXE', nrntraub_exe)
             run_env.set('DENTATE_EXE', dentate_exe)
             run_env.set('RINGTEST_EXE', ringtest_exe)
             run_env.set('TQPERF_EXE', tqperf_exe)
             run_env.set('NRNPERF_EXE', nrnperf_exe)
-
             run_env.set('BLUECONFIG', blueconfig)
+
             run_env.prepend_path('PYTHONPATH', tqperf_pythonpath)
             run_env.prepend_path('PYTHONPATH', ring_pythonpath)
 
