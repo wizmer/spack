@@ -22,21 +22,6 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
-#
-# This is a template package file for Spack.  We've put "FIXME"
-# next to all the things you'll want to change. Once you've handled
-# them, you can save this file and test your package like this:
-#
-#     spack install nix
-#
-# You can edit this file again by typing:
-#
-#     spack edit nix
-#
-# See the Spack documentation for more information on packaging.
-# If you submit this package back to Spack as a pull request,
-# please first remove this boilerplate and all FIXME comments.
-#
 import os.path as osp
 from spack import *
 
@@ -65,6 +50,9 @@ class Nix(AutotoolsPackage):
     depends_on('m4')
     depends_on('sqlite')
     depends_on('xz')
+
+    # gcc 4.9+ and higher supported with c++14
+    conflicts("%gcc@:4.8.99")
 
     def configure_args(self):
         args = []
