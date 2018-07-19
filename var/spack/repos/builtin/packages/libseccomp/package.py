@@ -7,10 +7,10 @@ from spack import *
 
 
 class Libseccomp(AutotoolsPackage):
-    """The main libseccomp repository"""
+    """Interface to the Linux Kernel's syscall filtering mechanism"""
 
     homepage = "https://github.com/seccomp/libseccomp"
-    url      = "https://github.com/seccomp/libseccomp/archive/v2.3.3.zip"
+    url      = "https://github.com/seccomp/libseccomp/releases/download/v2.3.3/libseccomp-2.3.3.tar.gz"
 
     version('2.3.3', sha256='627e114b3be2e66ed8d88b90037498333384d9bea822423662a44c3a8520e187')
 
