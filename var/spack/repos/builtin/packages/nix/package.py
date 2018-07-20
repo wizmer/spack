@@ -34,6 +34,8 @@ class Nix(AutotoolsPackage):
 
     version('2.0.4', '045adeb4714f559386e391cc3c411710')
 
+    patch('fix-doc-build.patch')
+
     variant('storedir', values=str, default=None,
             description='path of the Nix store (defaults to /nix)')
     variant('statedir', values=str, default=None,
@@ -43,14 +45,16 @@ class Nix(AutotoolsPackage):
     variant('sandboxing', values=bool, default=True,
             description='Enable build isolation')
 
-    depends_on('autoconf')
-    depends_on('automake')
-    depends_on('bison')
+    depends_on('autoconf', type='build')
+    depends_on('automake', type='build')
+    depends_on('bison', type='build')
+    depends_on('flex', type='build')
+    depends_on('libtool', type='build')
+    depends_on('libxslt', when="+doc", type='build')
+    depends_on('m4', type='build')
+
     depends_on('curl')
-    depends_on('flex')
     depends_on('libseccomp', when="+sandboxing")
-    depends_on('libtool')
-    depends_on('m4')
     depends_on('sqlite')
     depends_on('xz')
 
