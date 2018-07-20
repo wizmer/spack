@@ -33,8 +33,11 @@ class Nix(AutotoolsPackage):
     url      = "https://github.com/NixOS/nix/archive/2.0.4.zip"
 
     version('2.0.4', '045adeb4714f559386e391cc3c411710')
-    variant('data-dir', values=str, default=None,
-            description='Data root directory (default is /nix)')
+
+    variant('storedir', values=str, default=None,
+            description='path of the Nix store (defaults to /nix)')
+    variant('statedir', values=str, default=None,
+            description='path to the locale state (defaults to /nix/var)')
     variant('doc', values=bool, default=True,
             description="Build and install documentation")
     variant('sandboxing', values=bool, default=True,
@@ -60,10 +63,10 @@ class Nix(AutotoolsPackage):
             args.append('--disable-seccomp-sandboxing')
         if '+doc' not in self.spec:
             args.append('--disable-doc-gen')
-        data_dir = self.spec.variants['data-dir'].value
-        if data_dir:
-            args += [
-                '--with-store-dir=' + osp.join(data_dir, 'store'),
-                '--localstatedir=' + osp.join(data_dir, 'var'),
-            ]
+        storedir = self.spec.variants['storedir'].value
+        if storedir:
+            args.append('--with-store-dir=' + storedir)
+        statedir = self.spec.variants['statedir'].value
+        if statedir:
+            args.append('--localstatedir=' + statedir)
         return args
