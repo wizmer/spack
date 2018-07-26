@@ -44,6 +44,8 @@ class Nix(AutotoolsPackage):
             description="Build and install documentation")
     variant('sandboxing', values=bool, default=True,
             description='Enable build isolation')
+    variant('stdlibrpath', values=bool, default=True,
+            description='Add compiler library dir to Nix executables rpath')
 
     depends_on('autoconf', type='build')
     depends_on('automake', type='build')
@@ -74,3 +76,24 @@ class Nix(AutotoolsPackage):
         if statedir:
             args.append('--localstatedir=' + statedir)
         return args
+
+    @property
+    def compiler_lib_dir(self):
+        """
+        :return: path where C++ standard library is located
+        """
+        if self.compiler.name != 'gcc':
+            raise Exception('Unsupported compiler ' + self.compiler.name)
+        bin_dir = osp.dirname(self.compiler.cxx)
+        lib_dir = osp.normpath(osp.join(bin_dir, '..', 'lib64'))
+        if not osp.isdir(lib_dir):
+            raise Exception('Could not find compiler lib dir')
+        libstdcpp = osp.join(lib_dir, 'libstdc++.so')
+        if not osp.exists(libstdcpp):
+            raise Exception('Could not find libstdc++ in lib dir' + lib_dir)
+        return lib_dir
+
+    def setup_environment(self, spack_env, run_env):
+        if '+stdlibrpath' in self.spec:
+            rpath_flag = self.compiler.cc_rpath_arg + '=' + self.compiler_lib_dir
+            spack_env.append_flags('LDFLAGS', rpath_flag)
