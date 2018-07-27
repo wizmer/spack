@@ -1,0 +1,45 @@
+packages:
+    intelmpi:
+        modules:
+            intelmpi@5.1.3: IntelMPI/2018.2.199
+        version: [5.1.3]
+        buildable: False
+    mvapich2:
+        modules:
+            mvapich2@2.2: mvapich2/2.3b
+        version: [2.2]
+        buildable: False
+    cmake:
+        modules:
+            cmake@3.11.1: CMake/3.11.1
+        version: [3.11.1]
+        buildable: False
+    autoconf:
+        paths:
+            autoconf@system: /usr
+        buildable: False
+        version: [system]
+    automake:
+        paths:
+            automake@system: /usr
+        buildable: False
+        version: [system]
+    bison:
+        paths:
+            bison@system: /usr
+        buildable: False
+        version: [system]
+    python:
+        modules:
+            python@2.7.14: Python/2.7.14
+        version: [2.7.14]
+        buildable: False
+    zlib:
+        version: [1.2.8]
+    tau:
+        variants: ~openmp ~comm ~phase
+    all:
+        compiler: [intel]
+        providers:
+            mpi: [intelmpi]
+
