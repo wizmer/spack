@@ -1,0 +1,62 @@
+compilers:
+- compiler:
+    environment: {}
+    extra_rpaths:
+    - /usr/lib64
+    flags: {}
+    modules: []
+    operating_system: centos7
+    paths:
+      cc: /usr/bin/gcc
+      cxx: /usr/bin/g++
+      f77: /usr/bin/gfortran
+      fc: /usr/bin/gfortran
+    spec: gcc@4.8.2
+    target: x86_64
+- compiler:
+    environment: {}
+    extra_rpaths:
+    - /galileo/prod/opt/compilers/gnu/6.1.0/none/lib64
+    flags: {}
+    modules: []
+    operating_system: centos7
+    paths:
+      cc: /galileo/prod/opt/compilers/gnu/6.1.0/none/bin/gcc
+      cxx: /galileo/prod/opt/compilers/gnu/6.1.0/none/bin/g++
+      f77: /galileo/prod/opt/compilers/gnu/6.1.0/none/bin/gfortran
+      fc: /galileo/prod/opt/compilers/gnu/6.1.0/none/bin/gfortran
+    spec: gcc@6.1.0
+    target: x86_64
+- compiler:
+    environment: {}
+    flags: {}
+    modules:
+    - intel/pe-xe-2017--binary
+    extra_rpaths:
+    - /galileo/prod/compilers/intel/pe-xe-2017/binary/lib/intel64
+    - /galileo/prod/compilers/intel/pe-xe-2017/binary/inspector/lib64
+    - /galileo/prod/compilers/intel/pe-xe-2017/binary/itac_2017/lib
+    operating_system: centos7
+    paths:
+      cc: /galileo/prod/compilers/intel/pe-xe-2017/binary/bin/icc
+      cxx: /galileo/prod/compilers/intel/pe-xe-2017/binary/bin/icpc
+      f77: /galileo/prod/compilers/intel/pe-xe-2017/binary/bin/ifort
+      fc: /galileo/prod/compilers/intel/pe-xe-2017/binary/bin/ifort
+    spec: intel@17.0.4
+    target: x86_64
+- compiler:
+    environment: {}
+    flags: {}
+    modules: ["intel/pe-xe-2018--binary"]
+    operating_system: centos7
+    paths:
+      cc: /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/bin/icc
+      cxx: /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/bin/icpc
+      f77: /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/bin/ifort
+      fc: /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/bin/ifort
+    extra_rpaths:
+    - /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/lib/intel64
+    - /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/inspector/lib64
+    - /galileo/prod/opt/compilers/intel/pe-xe-2018/binary/itac_2017/lib
+    spec: intel@18.0.2
+    target: x86_64

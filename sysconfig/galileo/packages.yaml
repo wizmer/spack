@@ -1,0 +1,46 @@
+packages:
+    cmake:
+        modules:
+            cmake@3.7.1: cmake/3.7.1
+        version: [3.7.1]
+        buildable: False
+    autoconf:
+        paths:
+            autoconf@2.59: /usr
+        buildable: False
+        version: [2.59]
+    automake:
+        paths:
+            automake@1.13.4: /usr
+        buildable: False
+        version: [1.13.4]
+    pkg-config:
+        paths:
+            pkg-config@0.27.1: /usr
+        buildable: False
+        version: [0.27.1]
+    flex:
+        paths:
+            flex@2.5.37: /usr
+        buildable: False
+        version: [2.5.37]
+    bison:
+        paths:
+            bison@2.7: /usr
+        buildable: False
+        version: [2.7]
+    libtool:
+        paths:
+            libtool@2.4.2: /usr
+        buildable: False
+        version: [2.4.2]
+    zlib:
+        version: [1.2.7]
+    m4:
+        paths:
+            m4@1.4.16: /usr
+        buildable: False
+        version: [1.4.16]
+    all:
+        compiler: [gcc@6.1.0]
+
