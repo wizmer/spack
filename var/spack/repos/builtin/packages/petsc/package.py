@@ -88,6 +88,9 @@ class Petsc(Package):
             description='Activates support for SuiteSparse')
     variant('knl', default=False,
             description='Build for KNL')
+    variant('patchmpi64', default=False,
+            description='Patch of MPI support of int64')
+
     variant('X', default=False,
             description='Activate X support')
 
@@ -105,6 +108,7 @@ class Petsc(Package):
         patch('macos-clang-8.1.0.diff',
               when='@3.7.5%clang@8.1.0:')
     patch('pkg-config-3.7.6-3.8.4.diff', when='@3.7.6:3.8.4')
+    patch('mpi_int64_t_c++11.diff', when='+patchmpi64')
 
     patch('xcode_stub_out_of_sync.patch', when='@:3.10.4')
 
