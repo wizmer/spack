@@ -34,18 +34,43 @@ class OmegaH(CMakePackage):
 
     homepage = "https://github.com/ibaned/omega_h"
     url      = "https://github.com/ibaned/omega_h/archive/v9.13.4.tar.gz"
+    git      = "https://github.com/ibaned/omega_h.git"
 
-    version('9.13.4', '035f9986ec07ad97ae0aa1e171872307')
+    version('develop', branch='master')
+    version('9.13.14', sha256='f617dfd024c9cc323e56800ca23df3386bfa37e1b9bd378847d1f5d32d2b8e5d')
+    version('9.13.13', sha256='753702edf4bda9ae57ea21f09ca071e341604a468d8c86468c9aebba049f581c')
+    version('9.13.12', sha256='b37872c6059d5405f971098cce7bab3f74926d99b5f9dc8f8270467a85ed41d7')
+    version('9.13.11', sha256='992ba790cabc07f2c913c3f1e7ab28a46a76084567c39f69b77e4757e05b8720')
 
     variant('shared', default=True, description='Build shared libraries')
     variant('mpi', default=True, description='Activates MPI support')
     variant('zlib', default=True, description='Activates ZLib support')
+    variant('trilinos', default=True, description='Use Teuchos and Kokkos')
+    variant('build_type', default='')
+    variant('gmodel', default=True, description='Gmsh model generation library')
+    variant('throw', default=False, description='Errors throw exceptions instead of abort')
+    variant('examples', default=False, description='Compile examples')
+    variant('optimize', default=True, description='Compile C++ with optimization')
+    variant('symbols', default=True, description='Compile C++ with debug symbols')
+    variant('warnings', default=True, description='Compile C++ with warnings')
 
+    depends_on('gmodel', when='+gmodel')
+    depends_on('gmsh', when='+examples', type='build')
     depends_on('mpi', when='+mpi')
+    depends_on('trilinos +kokkos +teuchos', when='+trilinos')
     depends_on('zlib', when='+zlib')
 
+    def _bob_options(self):
+        cmake_var_prefix = self.name.upper() + '_CXX_'
+        for variant in ['optimize', 'symbols', 'warnings']:
+            cmake_var = cmake_var_prefix + variant.upper()
+            if '+' + variant in self.spec:
+                yield '-D' + cmake_var + ':BOOL=ON'
+            else:
+                yield '-D' + cmake_var + ':BOOL=FALSE'
+
     def cmake_args(self):
-        args = ['-DUSE_XSDK_DEFAULTS:BOOL=ON']
+        args = ['-DUSE_XSDK_DEFAULTS:BOOL=OFF']
         if '+shared' in self.spec:
             args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
         else:
@@ -56,6 +81,10 @@ class OmegaH(CMakePackage):
                 self.spec['mpi'].mpicxx))
         else:
             args.append('-DOmega_h_USE_MPI:BOOL=OFF')
+        if '+trilinos' in self.spec:
+            args.append('-DOmega_h_USE_Trilinos:BOOL=ON')
+        if '+gmodel' in self.spec:
+            args.append('-DOmega_h_USE_Gmodel:BOOL=ON')
         if '+zlib' in self.spec:
             args.append('-DTPL_ENABLE_ZLIB:BOOL=ON')
             args.append('-DTPL_ZLIB_INCLUDE_DIRS:STRING={0}'.format(
@@ -64,6 +93,15 @@ class OmegaH(CMakePackage):
                 self.spec['zlib'].libs))
         else:
             args.append('-DTPL_ENABLE_ZLIB:BOOL=OFF')
+        if '+examples' in self.spec:
+            args.append('-DOmega_h_EXAMPLES:BOOL=ON')
+        else:
+            args.append('-DOmega_h_EXAMPLES:BOOL=OFF')
+        if '+throw' in self.spec:
+            args.append('-DOmega_h_THROW:BOOL=ON')
+        else:
+            args.append('-DOmega_h_THROW:BOOL=OFF')
+        args += list(self._bob_options())
         return args
 
     def flag_handler(self, name, flags):

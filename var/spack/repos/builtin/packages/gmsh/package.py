@@ -44,6 +44,7 @@ class Gmsh(CMakePackage):
     version('2.15.0', '992a4b580454105f719f5bc05441d3d392ab0b4b80d4ea07b61ca3bdc974070a')
     version('2.12.0', '7fbd2ec8071e79725266e72744d21e902d4fe6fa9e7c52340ad5f4be5c159d09')
     version('2.11.0', 'f15b6e7ac9ca649c9a74440e1259d0db')
+    version('develop', branch='master', git='https://gitlab.onelab.info/gmsh/gmsh.git')
 
     variant('shared',      default=True,  description='Enables the build of shared libraries')
     variant('mpi',         default=True,  description='Builds MPI support for parser and solver')
