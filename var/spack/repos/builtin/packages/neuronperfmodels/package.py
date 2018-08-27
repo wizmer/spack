@@ -201,7 +201,7 @@ class Neuronperfmodels(Package):
         self.HIPPO_V5_DIR = "hippocampus-v5"
 
         if self.spec.satisfies('@neuron'):
-            archdir = self.neuron_archdir
+            archdir = os.path.basename(self.neuron_archdir)
             blueconfig = '%s/simtestdata/BlueConfig' % prefix
             neurodamus_exe = '%s/neurodamus/lib/%s/special' % (prefix, archdir)
             nrntraub_exe = '%s/nrntraub/%s/special' % (prefix, archdir)

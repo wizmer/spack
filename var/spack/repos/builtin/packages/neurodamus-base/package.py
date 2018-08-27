@@ -34,7 +34,7 @@ class NeurodamusBase(Package):
     url      = "ssh://bbpcode.epfl.ch/sim/neurodamus/bbp"
 
     version('master',      git=url)
-    version('hippocampus', git=url, branch='sandbox/king/hippocampus')
+    version('hippocampus', git=url, branch='sandbox/kumbhar/hippocampus_demo')
     version('plasticity',  git=url, branch='sandbox/king/saveupdate_v6support_mask', preferred=True)
 
     def install(self, spec, prefix):

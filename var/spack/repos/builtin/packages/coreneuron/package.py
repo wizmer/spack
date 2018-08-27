@@ -47,7 +47,7 @@ class Coreneuron(CMakePackage):
     variant('gpu', default=False, description="Enable GPU build")
     variant('knl', default=False, description="Enable KNL specific flags")
     variant('mpi', default=True, description="Enable MPI support")
-    variant('openmp', default=True, description="Enable OpenMP support")
+    variant('openmp', default=False, description="Enable OpenMP support")
     variant('profile', default=False, description="Enable profiling using Tau")
     variant('report', default=True, description="Enable reports using ReportingLib")
     variant('shared', default=True, description="Build shared library")
