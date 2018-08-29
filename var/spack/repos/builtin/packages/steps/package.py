@@ -38,9 +38,6 @@ class Steps(CMakePackage):
     version("develop", branch="master", submodules=True)
 
     variant("native", default=True, description="Generate non-portable arch-specific code")
-    variant("bindings", default="cython",
-            values=("cython", "swig"),
-            description="Generate bindings using Cython, instead of Swig")
     variant("lapack", default=False, description="Use new BDSystem/Lapack code for E-Field solver")
     variant("petsc", default=False, description="Use PETSc library for parallel E-Field solver")
     variant("mpi", default=True, description="Use MPI for parallel solvers")
@@ -50,25 +47,16 @@ class Steps(CMakePackage):
     depends_on("mpi", when="+mpi")
     depends_on("petsc^debug+int64", when="+petsc")
     depends_on("python")
-    depends_on("swig", when="bindings=swig")
-    depends_on("py-cython", when="bindings=cython")
+    depends_on("py-cython")
 
     def cmake_args(self):
         args = []
         spec = self.spec
-        bindings =  spec.variants["bindings"].value
 
         if "+native" in spec:
             args.append("-DTARGET_NATIVE_ARCH:BOOL=True")
         else:
             args.append("-DTARGET_NATIVE_ARCH:BOOL=False")
-
-        if bindings == "cython":
-            args.append("-DPYTHON_BINDINGS_CYTHON:BOOL=True")
-        elif bindings == "swig":
-            args.append("-DPYTHON_BINDINGS_CYTHON:BOOL=False")
-        else:
-            raise Exception("Unexpected bindings type: " + bindings)
 
         if "+lapack" in spec:
             args.append("-DUSE_BDSYSTEM_LAPACK:BOOL=True")
