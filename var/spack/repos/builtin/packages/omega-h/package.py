@@ -101,6 +101,8 @@ class OmegaH(CMakePackage):
             args.append('-DOmega_h_THROW:BOOL=ON')
         else:
             args.append('-DOmega_h_THROW:BOOL=OFF')
+        if self.spec.satisfies('%clang'):
+            args.append('-DOmega_h_EXTRA_CXX_FLAGS:STRING=-Wno-documentation-unknown-command')
         args += list(self._bob_options())
         return args
 
