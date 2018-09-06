@@ -45,7 +45,7 @@ class Neuron(Package):
     version('7.4', '2c0bbee8a9e55d60fa26336f4ab7acbf')
     version('7.3', '993e539cb8bf102ca52e9fefd644ab61')
     version('7.2', '5486709b6366add932e3a6d141c4f7ad')
-    version('develop', git=github, preferred=True)
+    version('develop', git=github, branch='gpu2016', preferred=True)
 
     variant('binary',        default=True, description="Create special as a binary instead of shell script")
     variant('coreneuron',    default=True, description="Patch hh.mod for CoreNEURON compatibility")
@@ -55,7 +55,7 @@ class Neuron(Package):
     variant('multisend',     default=True,  description="Enable multi-send spike exchange")
     variant('profile',       default=False, description="Enable Tau profiling")
     variant('python',        default=True,  description='Enable python')
-    variant('shared',        default=True, description='Build shared libraries')
+    variant('shared',        default=False, description='Build shared libraries')
     variant('rx3d',          default=False, description="Enable cython translated 3-d rxd")
 
     depends_on('autoconf',   type='build')
@@ -70,9 +70,9 @@ class Neuron(Package):
     depends_on('python@2.6:', when='+python')
     depends_on('tau',         when='+profile')
 
-    conflicts('~shared', when='+python')
+    #conflicts('~shared', when='+python')
 
-    filter_compiler_wrappers('*/bin/nrniv_makefile')
+    # filter_compiler_wrappers('*/bin/nrniv_makefile')
 
     def get_neuron_archdir(self):
         """Determine the architecture-specific neuron base directory.

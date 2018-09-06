@@ -127,6 +127,8 @@ class Neuronperfmodels(Package):
                     # mod2c_core can't compile ri.mod
                     if 'nrntraub/mod/ri.mod' in filepath:
                         continue
+                    if 'brettetest' in filepath:
+                        continue
                     # neuron already have exp2syn.mod but not coreneuron
                     if 'neuron_mod/exp2syn.mod' in filepath and spec.satisfies('@neuron'):
                         continue

@@ -41,7 +41,7 @@ class Coreneuron(CMakePackage):
     version('plasticity', git=url, preferred=True, submodules=True)
 
     # TODO: for performance benchmarking
-    version('perfmodels', git=url, submodules=True)
+    version('perfmodels', git=url, commit='1aac8e8b8f5b36528b8bac72008175843d869e97', submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
@@ -50,7 +50,7 @@ class Coreneuron(CMakePackage):
     variant('openmp', default=False, description="Enable OpenMP support")
     variant('profile', default=False, description="Enable profiling using Tau")
     variant('report', default=True, description="Enable reports using ReportingLib")
-    variant('shared', default=True, description="Build shared library")
+    variant('shared', default=False, description="Build shared library")
     variant('tests', default=False, description="Enable building tests")
 
     depends_on('boost', when='+tests')
@@ -62,6 +62,7 @@ class Coreneuron(CMakePackage):
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')
+    depends_on('mod2c', when='@perfmodels')
 
     # neuron models for benchmarking
     depends_on('neuronperfmodels@coreneuron', when='@perfmodels')
@@ -85,6 +86,8 @@ class Coreneuron(CMakePackage):
                 flags = '-g -O2 -xHost -qopt-report=5'
         if '+debug' in self.spec:
             flags = '-g -O0'
+        if self.spec.satisfies('+gpu'):
+            flags = "-O2 -ta=tesla:cuda7.5 -Minline=size:1000,levels:100"
         if '+profile' in self.spec:
             flags += ' -DTAU'
         return flags
