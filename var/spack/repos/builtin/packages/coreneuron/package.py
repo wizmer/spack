@@ -87,7 +87,10 @@ class Coreneuron(CMakePackage):
         if '+debug' in spec:
             flags = '-g -O0'
         if '+gpu' in spec:
-            flags = '-O2 -Minline=size:1000,levels:100,totalsize:40000,maxsize:4000'
+            if spec.satisfies('%pgi@18:'):
+                flags = '-O2 -Minline=size:1000,levels:100,totalsize:40000,maxsize:4000'
+            else:
+                flags = '-O2 -Minline=size:1000,levels:100'
             flags += ' -ta=tesla:cuda%s' % (spec['cuda'].version.up_to(2))
         if '+profile' in spec:
             flags += ' -DTAU'

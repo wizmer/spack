@@ -16,8 +16,8 @@ compilers:
     paths:
       cc: /gpfs/bbp.cscs.ch/apps/viz/tools/pgi/16.5/linux86-64/16.5/bin/pgcc
       cxx: /gpfs/bbp.cscs.ch/apps/viz/tools/pgi/16.5/linux86-64/16.5/bin/pgc++
-      f77: null
-      fc: null
+      f77: /usr/bin/gfortran
+      fc: /usr/bin/gfortran
     spec: pgi@16.5-0
 - compiler:
     flags: {}
