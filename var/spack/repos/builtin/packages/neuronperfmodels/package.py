@@ -249,6 +249,3 @@ class Neuronperfmodels(Package):
             run_env.set('DENTATE_HOC_PATH', rd_hoc_path)
             run_env.set('RINGTEST_HOC_PATH', ring_hoc_path)
             run_env.set('TQPERF_HOC_PATH', tq_hoc_path)
-
-    def setup_dependent_package(self, module, dspec):
-        dspec.package.nrnperf_modfiles = '%s/modfiles' % self.prefix

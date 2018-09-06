@@ -34,7 +34,7 @@ class Mod2c(CMakePackage):
     homepage = "https://github.com/BlueBrain/mod2c"
     url      = "https://github.com/BlueBrain/mod2c.git"
 
-    version('develop', git=url, commit='e7d454f0984e467628f71561a6c7839cc6a2bfcc', preferred=True)
+    version('develop', git=url, preferred=True)
 
     depends_on('cmake@2.8.12:', type='build')
 
