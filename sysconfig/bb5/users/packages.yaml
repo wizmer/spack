@@ -29,6 +29,10 @@ packages:
         modules:
             cmake@3.9.6: nix/cmake/3.9.6
         version: [3.9.6, 2.8.12]
+    cuda:
+        modules:
+            cuda@9.0.176: cuda/9.0.176
+        version: [9.0.176]
     curl:
         paths:
             curl@7.29.0: /usr

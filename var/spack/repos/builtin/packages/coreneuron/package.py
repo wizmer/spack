@@ -76,18 +76,20 @@ class Coreneuron(CMakePackage):
 
     def get_flags(self):
         flags = "-g -O2"
-        if 'bgq' in self.spec.architecture and '%xl' in self.spec:
+        spec = self.spec
+        if 'bgq' in spec.architecture and '%xl' in spec:
             flags = '-O3 -qtune=qp -qarch=qp -q64 -qhot=simd -qsmp -qthreaded -g'
-        if '%intel' in self.spec:
-            if '+knl' in self.spec:
+        if '%intel' in spec:
+            if '+knl' in spec:
                 flags = '-g -xMIC-AVX512 -O2 -qopt-report=5'
             else:
                 flags = '-g -O2 -xHost -qopt-report=5'
-        if '+debug' in self.spec:
+        if '+debug' in spec:
             flags = '-g -O0'
-        if self.spec.satisfies('+gpu'):
-            flags = "-O2 -ta=tesla:cuda7.5 -Minline=size:1000,levels:100"
-        if '+profile' in self.spec:
+        if '+gpu' in spec:
+            flags = '-O2 -Minline=size:1000,levels:100,totalsize:40000,maxsize:4000'
+            flags += ' -ta=tesla:cuda%s' % (spec['cuda'].version.up_to(2))
+        if '+profile' in spec:
             flags += ' -DTAU'
         return flags
 
