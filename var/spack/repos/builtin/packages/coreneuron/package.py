@@ -50,7 +50,7 @@ class Coreneuron(CMakePackage):
     variant('openmp', default=False, description="Enable OpenMP support")
     variant('profile', default=False, description="Enable profiling using Tau")
     variant('report', default=True, description="Enable reports using ReportingLib")
-    variant('shared', default=False, description="Build shared library")
+    variant('shared', default=True, description="Build shared library")
     variant('tests', default=False, description="Enable building tests")
 
     depends_on('boost', when='+tests')
