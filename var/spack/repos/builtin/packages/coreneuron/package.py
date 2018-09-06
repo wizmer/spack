@@ -115,7 +115,7 @@ class Coreneuron(CMakePackage):
                    '-DFUNCTIONAL_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF')
                    ]
 
-        if spec.satisfies('~shared'):
+        if spec.satisfies('~shared') or spec.satisfies('+gpu'):
             options.append('-DCOMPILE_LIBRARY_TYPE=STATIC')
 
         if 'bgq' in spec.architecture and '%xl' in spec:
