@@ -1,0 +1,20 @@
+packages:
+    intel-mpi:
+        modules:
+            intel-mpi@2017_update1: intel.mpi/2017_update1
+        version: [2017_update1]
+
+    ncurses:
+        paths:
+            ncurses@5.9-13: /usr
+        version: [5.9-13]
+
+    cmake:
+        paths:
+            cmake@3.6.2: /apps/free72/cmake/3.6.2
+        version: [3.6.2]
+
+    all:
+        compiler: [intel]
+        providers:
+            mpi: [intel-mpi]
