@@ -35,22 +35,8 @@ class Cubelib(AutotoolsPackage):
 
     depends_on('zlib')
 
-    def url_for_version(self, version):
-        filename = 'cubelib-{0}.tar.gz'.format(version)
-
-        return 'http://apps.fz-juelich.de/scalasca/releases/cube/{0}/dist/{1}'.format(version.up_to(2), filename)
-
     def configure_args(self):
-        spec = self.spec
-
         configure_args = ['--enable-shared']
-
-        if spec.satisfies('%intel'):
-            configure_args.append('--with-nocross-compiler-suite=intel')
-        elif spec.satisfies('%pgi'):
-            configure_args.append('--with-nocross-compiler-suite=pgi')
-        elif spec.satisfies('%clang'):
-            configure_args.append('--with-nocross-compiler-suite=clang')
 
         return configure_args
 

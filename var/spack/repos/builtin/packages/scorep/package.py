@@ -47,7 +47,6 @@ class Scorep(AutotoolsPackage):
     variant('papi', default=True, description="Enable PAPI")
     variant('pdt', default=False, description="Enable PDT")
     variant('shmem', default=False, description='Enable shmem tracing')
-    variant('gui', default=False, description='Depend on CubeGUI')
 
     # Dependencies for SCORE-P are quite tight. See the homepage for more
     # information. Starting with scorep 4.0 / cube 4.4, Score-P only depends on
@@ -58,7 +57,6 @@ class Scorep(AutotoolsPackage):
     depends_on('opari2@2.0:', when='@4:')
     depends_on('cubew@4.4:', when='@4:')
     depends_on('cubelib@4.4:', when='@4:')
-    depends_on('cubegui@4.4:', when='@4: +gui')
     # SCOREP 3
     depends_on('otf2@2:', when='@3:3.99')
     depends_on('opari2@2:', when='@3:3.99')
@@ -76,9 +74,9 @@ class Scorep(AutotoolsPackage):
     depends_on("opari2@1.1.4", when='@1.3')
     depends_on("cube@4.2.3", when='@1.3')
 
-    depends_on("mpi", when='+mpi')
-    depends_on("papi")
-    depends_on("pdt")
+    depends_on('mpi', when="+mpi")
+    depends_on('papi', when="+papi")
+    depends_on('pdt', when="+pdt")
 
     # Score-P requires a case-sensitive file system, and therefore
     # does not work on macOS
@@ -92,17 +90,16 @@ class Scorep(AutotoolsPackage):
             "--with-otf2=%s" % spec['otf2'].prefix.bin,
             "--with-opari2=%s" % spec['opari2'].prefix.bin,
             "--enable-shared"]
-        
-        if spec.satisfies("@4.0:"):
-            config_args.extend([
-                "--with-cubew=%s" % spec['cubew'].prefix.bin,
-                "--with-cubelib=%s" % spec['cubelib'].prefix.bin,
-                ])
-        else:
-            config_args.append("--with-cube=%s" % spec['cube'].prefix.bin)
 
         cname = spec.compiler.name
         config_args.append('--with-nocross-compiler-suite={0}'.format(cname))
+
+        if self.version >= Version('4.0'):
+            config_args.append("--with-cubew=%s" % spec['cubew'].prefix.bin)
+            config_args.append("--with-cubelib=%s" %
+                               spec['cubelib'].prefix.bin)
+        else:
+            config_args.append("--with-cube=%s" % spec['cube'].prefix.bin)
 
         if "+papi" in spec:
             config_args.append("--with-papi-header=%s" %
@@ -113,25 +110,14 @@ class Scorep(AutotoolsPackage):
             config_args.append("--with-pdt=%s" % spec['pdt'].prefix.bin)
 
         config_args += self.with_or_without('shmem')
+        config_args += self.with_or_without('mpi')
 
-        if '+mpi' in spec:
-            if spec.satisfies('^intel-mpi'):
-                config_args.append('--with-mpi=intel3')
-            elif spec.satisfies('^mpich') or spec.satisfies('^mvapich2'):
-                config_args.append('--with-mpi=mpich3')
-            elif spec.satisfies('^openmpi'):
-                config_args.append('--with-mpi=openmpi')
-            elif spec.satisfies('^hpe-mpi'):
-                config_args.append('--with-mpi=sgimpt')
-            else:
-                raise Exception('Unrecognized MPI library')
-
-        if spec.satisfies('%gcc'):
-            config_args.append('--with-nocross-compiler-suite=gcc')
-        elif spec.satisfies('%intel'):
-            config_args.append('--with-nocross-compiler-suite=intel')
-        elif spec.satisfies('%pgi'):
-            config_args.append('--with-nocross-compiler-suite=pgi')
+        if spec.satisfies('^intel-mpi'):
+            config_args.append('--with-mpi=intel3')
+        elif spec.satisfies('^mpich') or spec.satisfies('^mvapich2'):
+            config_args.append('--with-mpi=mpich3')
+        elif spec.satisfies('^openmpi'):
+            config_args.append('--with-mpi=openmpi')
 
         config_args.extend([
             'CFLAGS={0}'.format(self.compiler.pic_flag),

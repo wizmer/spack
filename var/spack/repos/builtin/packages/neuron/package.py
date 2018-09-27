@@ -62,7 +62,7 @@ class Neuron(Package):
     depends_on('bison',      type='build')
     depends_on('flex',       type='build')
     depends_on('libtool',    type='build')
-    depends_on('pkg-config', type='build')
+    depends_on('pkgconfig',  type='build')
 
     depends_on('mpi',         when='+mpi')
     depends_on('ncurses',     when='~cross-compile')
@@ -91,7 +91,7 @@ class Neuron(Package):
 
     def patch(self):
         # aclocal need complete include path (especially on os x)
-        pkgconf_inc = '-I %s/share/aclocal/' % (self.spec['pkg-config'].prefix)
+        pkgconf_inc = '-I %s/share/aclocal/' % (self.spec['pkgconfig'].prefix)
         libtool_inc = '-I %s/share/aclocal/' % (self.spec['libtool'].prefix)
         newpath = 'aclocal -I m4 %s %s' % (pkgconf_inc, libtool_inc)
         filter_file(r'aclocal -I m4', r'%s' % newpath, "build.sh")
