@@ -68,6 +68,7 @@ class Tau(Package):
     # support.
     depends_on('pdt')  # Required for TAU instrumentation
     depends_on('scorep', when='+scorep')
+    depends_on('otf', when='+scorep')
     #depends_on('binutils', when='~download')
     depends_on('mpi', when='+mpi')
 
@@ -146,6 +147,7 @@ class Tau(Package):
 
         if '+scorep' in spec:
             options.append("-scorep=%s" % spec['scorep'].prefix)
+            options.append("-otf=%s" % spec['otf'].prefix)
 
         if '+openmp' in spec:
             options.extend(['-openmp', '-opari'])

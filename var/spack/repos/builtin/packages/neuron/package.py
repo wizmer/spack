@@ -44,7 +44,7 @@ class Neuron(Package):
     version('7.4', '2c0bbee8a9e55d60fa26336f4ab7acbf')
     version('7.3', '993e539cb8bf102ca52e9fefd644ab61')
     version('7.2', '5486709b6366add932e3a6d141c4f7ad')
-    version('develop', git=git, commit='9f36b132ce1b5e4', preferred=True)
+    version('develop', git=git, commit='83fc576725e00', preferred=True)
 
     variant('binary',        default=True, description="Create special as a binary instead of shell script")
     variant('coreneuron',    default=True, description="Patch hh.mod for CoreNEURON compatibility")
@@ -67,11 +67,13 @@ class Neuron(Package):
     depends_on('mpi',         when='+mpi')
     depends_on('ncurses',     when='~cross-compile')
     depends_on('python@2.6:', when='+python')
+    depends_on('perfconfigs', when='+profile')
     depends_on('tau',         when='+profile')
 
     conflicts('~shared', when='+python')
 
     filter_compiler_wrappers('*/bin/nrniv_makefile')
+
 
     def get_neuron_archdir(self):
         """Determine the architecture-specific neuron base directory.
@@ -252,17 +254,30 @@ class Neuron(Package):
         filter_file(env['CC'],  self.compiler.cc, nrnmakefile, **kwargs)
         filter_file(env['CXX'], self.compiler.cxx, nrnmakefile, **kwargs)
 
+    def setup_tau_environment(self, spack_env, run_env):
+        spec = self.spec
+        if (spec.satisfies('+profile')):
+            tau_file = spec['perfconfigs'].prefix + "/tau/neuron/instrumentation.tau"
+            tau_opts = "-optPDTInst -optNoCompInst -optRevert -optVerbose"
+            tau_opts += " -optTauSelectFile=%s" % tau_file
+            if (spec.satisfies('+mpi')):
+                tau_opts += " -optAppCC=%s" % spec['mpi'].mpicc
+                tau_opts += " -optAppCXX=%s" % spec['mpi'].mpicxx
+            os.environ["TAU_OPTIONS"] = tau_opts
+
     def setup_environment(self, spack_env, run_env):
         neuron_archdir = self.get_neuron_archdir()
         run_env.prepend_path('PATH', join_path(neuron_archdir, 'bin'))
         run_env.prepend_path(
             'LD_LIBRARY_PATH', join_path(neuron_archdir, 'lib'))
+        self.setup_tau_environment(spack_env, run_env)
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         neuron_archdir = self.get_neuron_archdir()
         spack_env.prepend_path('PATH', join_path(neuron_archdir, 'bin'))
         spack_env.prepend_path(
             'LD_LIBRARY_PATH', join_path(neuron_archdir, 'lib'))
+        self.setup_tau_environment(spack_env, run_env)
 
     def setup_dependent_package(self, module, dependent_spec):
         neuron_archdir = self.get_neuron_archdir()

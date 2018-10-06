@@ -27,7 +27,6 @@ import os
 
 
 class Coreneuron(CMakePackage):
-
     """CoreNEURON is a simplified engine for the NEURON simulator
     optimised for both memory usage and computational speed. Its goal
     is to simulate massive cell networks with minimal memory footprint
@@ -36,15 +35,18 @@ class Coreneuron(CMakePackage):
     homepage = "https://github.com/BlueBrain/CoreNeuron"
     url      = "https://github.com/BlueBrain/CoreNeuron"
 
+    version('coretest', git=url, submodules=True)
     version('develop', git=url, submodules=True)
     version('hippocampus', git=url, submodules=True)
-    version('plasticity', git=url, preferred=True, submodules=True)
+    version('plasticity', git=url, submodules=True, preferred=True)
+    version('ring', git=url, submodules=True)
+    version('traub', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
     variant('knl', default=False, description="Enable KNL specific flags")
     variant('mpi', default=True, description="Enable MPI support")
-    variant('openmp', default=True, description="Enable OpenMP support")
+    variant('openmp', default=False, description="Enable OpenMP support")
     variant('profile', default=False, description="Enable profiling using Tau")
     variant('report', default=True, description="Enable reports using ReportingLib")
     variant('shared', default=True, description="Build shared library")
@@ -56,9 +58,11 @@ class Coreneuron(CMakePackage):
     depends_on('mpi', when='+mpi')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
+    depends_on('neuronmodelresource', when='@coretest @ring @traub')
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
-    depends_on('tau', when='+profile')
+    depends_on('tau+openmp', when='+profile+openmp')
+    depends_on('tau~openmp', when='+profile~openmp')
 
     @run_before('build')
     def profiling_wrapper_on(self):
@@ -66,6 +70,10 @@ class Coreneuron(CMakePackage):
         tau_file = self.stage.source_path + "/extra/instrumentation.tau"
         tau_opts = "-optPDTInst -optNoCompInst -optRevert -optVerbose"
         tau_opts += " -optTauSelectFile=%s" % tau_file
+        spec = self.spec
+        if (spec.satisfies('+mpi+profile')):
+            tau_opts += " -optAppCC=%s" % spec['mpi'].mpicc
+            tau_opts += " -optAppCXX=%s" % spec['mpi'].mpicxx
         os.environ["TAU_OPTIONS"] = tau_opts
 
     @run_after ('install')
@@ -138,6 +146,11 @@ class Coreneuron(CMakePackage):
             options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
             options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
 
+        if '^neuronmodelresource' in spec:
+            models = self.spec['neuronmodelresource'].prefix.models
+            mod_dir = '%s/%s/mod' % (models, spec.version)
+            options.append('-DADDITIONAL_MECHPATH=%s' % mod_dir)
+
         return options
 
     @property
@@ -145,8 +158,8 @@ class Coreneuron(CMakePackage):
         """Export the coreneuron library.
         Sample usage: spec['coreneuron'].libs.ld_flags
         """
-        search_paths = [[self.prefix.lib, False], [self.prefix.lib64, False]]
         spec = self.spec
+        search_paths = [[self.prefix.lib, False], [self.prefix.lib64, False]]
         is_shared = spec.satisfies('+shared') and spec.satisfies('~gpu')
         for path, recursive in search_paths:
             libs = find_libraries('libcoreneuron', root=path,
