@@ -48,6 +48,7 @@ class Scorep(AutotoolsPackage):
     variant('pdt', default=False, description="Enable PDT")
     variant('shmem', default=False, description='Enable shmem tracing')
     variant('gui', default=False, description='Depend on CubeGUI')
+    variant('shared', default=False, description='Enabled shared libraries')
 
     # Dependencies for SCORE-P are quite tight. See the homepage for more
     # information. Starting with scorep 4.0 / cube 4.4, Score-P only depends on
@@ -90,8 +91,12 @@ class Scorep(AutotoolsPackage):
 
         config_args = [
             "--with-otf2=%s" % spec['otf2'].prefix.bin,
-            "--with-opari2=%s" % spec['opari2'].prefix.bin,
-            "--enable-shared"]
+            "--with-opari2=%s" % spec['opari2'].prefix.bin]
+
+        if "+shared" in spec:
+            config_args.append("--enable-shared")
+        else:
+            config_args.append("--disable-shared")
 
         if spec.satisfies("@4.0:"):
             config_args.extend([
