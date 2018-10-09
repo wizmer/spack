@@ -58,7 +58,6 @@ class Neuronmodelresource(Package):
 
     def install(self, spec, prefix):
         shutil.copytree('models', '%s/models' % (prefix), symlinks=False)
-        os.remove('%s/models/traub/mod/ri.mod' % (prefix))
 
     def setup_dependent_package(self, module, dependent_spec):
         model_dir = '%s/models/%s' % (self.spec.prefix, dependent_spec.version)
