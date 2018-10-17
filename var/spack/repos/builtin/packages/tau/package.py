@@ -57,6 +57,7 @@ class Tau(Package):
     variant('mpi', default=True,
             description='Specify use of TAU MPI wrapper library')
     variant('phase', default=True, description='Generate phase based profiles')
+    variant('papi', default=True, description='Enable papi support')
     # TODO : comm variant has bug, reported upstream
     variant('comm', default=False,
             description=' Generate profiles with MPI communicator info')
@@ -71,6 +72,7 @@ class Tau(Package):
     depends_on('otf', when='+scorep')
     #depends_on('binutils', when='~download')
     depends_on('mpi', when='+mpi')
+    depends_on('papi', when='+papi')
 
     def patch(self):
         # TODO : neuron autotools add -MD option which turns off tau profile
@@ -154,6 +156,9 @@ class Tau(Package):
 
         if '+pthread' in spec:
             options.append('-pthread')
+
+        if '+papi' in spec:
+            options.append("-papi=%s" % spec['papi'].prefix)
 
         if '+mpi' in spec:
             options.append('-mpi')

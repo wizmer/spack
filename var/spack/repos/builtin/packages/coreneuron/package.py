@@ -61,7 +61,7 @@ class Coreneuron(CMakePackage):
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
     depends_on('neuronmodelresource', when='@coretest @ring @traub @bbp')
     depends_on('reportinglib', when='+report')
-    depends_on('reportinglib+profile', when='+report+profile')
+    #depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau+openmp', when='+profile+openmp')
     depends_on('tau~openmp', when='+profile~openmp')
 

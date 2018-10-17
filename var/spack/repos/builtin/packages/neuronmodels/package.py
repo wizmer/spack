@@ -46,6 +46,8 @@ class Neuronmodels(Package):
     depends_on('mpi', when='+mpi')
     depends_on('neuron+profile', when='+profile')
     depends_on('neuron~profile', when='~profile')
+    depends_on('coreneuron+profile', when='+profile')
+    depends_on('coreneuron~profile', when='~profile')
     depends_on('tau~openmp', when='+profile')
     depends_on('neuronmodelresource', when='@coretest @ring @traub @bbp')
 
