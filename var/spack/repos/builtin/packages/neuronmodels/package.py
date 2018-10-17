@@ -25,6 +25,7 @@ class Neuronmodels(Package):
     version('coretest', git=url, submodules=True)
     version('ring', git=url, submodules=True, preferred=True)
     version('traub', git=url, submodules=True)
+    version('bbp', git=url, submodules=True)
 
     variant('gpu', default=False, description="Enable GPU build")
     variant('knl', default=False, description="Enable KNL specific flags")
@@ -33,14 +34,20 @@ class Neuronmodels(Package):
     variant('profile', default=False, description="Enable profiling using Tau")
     variant('report', default=True, description="Enable reports using ReportingLib")
 
-    for version in ['coretest', 'ring', 'traub']:
-        depends_on('coreneuron@%s ~report+shared' % version, when='@%s' % version)
+    for version in ['coretest', 'ring', 'traub', 'bbp']:
+        if version == 'bbp':
+            depends_on('coreneuron@%s +report+shared' % version, when='@%s' % version)
+            depends_on('hdf5')
+            depends_on('reportinglib')
+            depends_on('zlib')
+        else:
+            depends_on('coreneuron@%s ~report+shared' % version, when='@%s' % version)
 
     depends_on('mpi', when='+mpi')
     depends_on('neuron+profile', when='+profile')
     depends_on('neuron~profile', when='~profile')
     depends_on('tau~openmp', when='+profile')
-    depends_on('neuronmodelresource', when='@coretest @ring @traub')
+    depends_on('neuronmodelresource', when='@coretest @ring @traub @bbp')
 
     @run_before('install')
     def profiling_wrapper_on(self):
@@ -64,7 +71,7 @@ class Neuronmodels(Package):
 
     def get_model_dir(self):
         spec = self.spec
-    	models = self.spec['neuronmodelresource'].prefix.models
+        models = self.spec['neuronmodelresource'].prefix.models
         model_dir = '%s/%s' % (models, spec.version)
         return model_dir
 
@@ -79,6 +86,24 @@ class Neuronmodels(Package):
                 tau_opts += " -optAppCXX=%s" % spec['mpi'].mpicxx
             os.environ["TAU_OPTIONS"] = tau_opts
 
+    def get_inc_flags(self):
+        spec = self.spec
+        inc_flag  = '-DENABLE_TAU_PROFILER' if '+profile' in spec else ''
+        inc_flag += ' -DENABLE_CORENEURON -I%s' % spec['coreneuron'].prefix.include
+        if spec.satisfies('@bbp'):
+            inc_flag += ' -I%s' %  spec['reportinglib'].prefix.include
+        return inc_flag
+
+    def get_link_flags(self):
+        spec = self.spec
+        link_flag = ' %s' % (spec['coreneuron'].libs.ld_flags)
+        if spec.satisfies('@bbp'):
+            link_flag += ' %s -L%s -lhdf5 -L%s -lz' % (
+                            spec['reportinglib'].libs.ld_flags,
+                            spec['hdf5'].prefix.lib,
+                            spec['zlib'].prefix.lib)
+        return link_flag
+
     def install(self, spec, prefix):
         model_dir = self.get_model_dir()
         link_flag = ' %s' % spec['coreneuron'].libs.ld_flags
@@ -87,7 +112,7 @@ class Neuronmodels(Package):
             shutil.copytree(model_dir, str(spec.version), symlinks=False)
             mod_dir = '%s/mod' % spec.version
             self.setup_tau_environment()
-            self.create_special('', link_flag, mod_dir)
+            self.create_special(self.get_inc_flags(), self.get_link_flags(), mod_dir)
 
     def setup_environment(self, spack_env, run_env):
         prefix = self.prefix
@@ -99,4 +124,3 @@ class Neuronmodels(Package):
         run_env.prepend_path('PYTHONPATH', self.python_path)
         run_env.set('MODEL_DIR', self.get_model_dir())
         run_env.set('CORENEURONLIB', cnrn_lib)
-

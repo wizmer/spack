@@ -41,6 +41,7 @@ class Coreneuron(CMakePackage):
     version('plasticity', git=url, submodules=True, preferred=True)
     version('ring', git=url, submodules=True)
     version('traub', git=url, submodules=True)
+    version('bbp', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
@@ -58,7 +59,7 @@ class Coreneuron(CMakePackage):
     depends_on('mpi', when='+mpi')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
-    depends_on('neuronmodelresource', when='@coretest @ring @traub')
+    depends_on('neuronmodelresource', when='@coretest @ring @traub @bbp')
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau+openmp', when='+profile+openmp')
@@ -150,6 +151,9 @@ class Coreneuron(CMakePackage):
             models = self.spec['neuronmodelresource'].prefix.models
             mod_dir = '%s/%s/mod' % (models, spec.version)
             options.append('-DADDITIONAL_MECHPATH=%s' % mod_dir)
+            modfile_list = mod_dir + '/coreneuron_modlist.txt'
+            if os.path.isfile(modfile_list):
+                options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
 
         return options
 

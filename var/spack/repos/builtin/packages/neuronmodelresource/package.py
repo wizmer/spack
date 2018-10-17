@@ -55,9 +55,21 @@ class Neuronmodelresource(Package):
         placement='coretest',
         destination='models'
     )
+    resource(
+        name='bbp',
+        git='ssh://bbpcode.epfl.ch/sim/neurodamus/bbp',
+        branch='sandbox/king/saveupdate_v6support_mask',
+        placement='bbp',
+        destination='models'
+    )
 
     def install(self, spec, prefix):
         shutil.copytree('models', '%s/models' % (prefix), symlinks=False)
+        #standardized links for bbp model
+        bbp_model = prefix + '/models/bbp'
+        with working_dir(bbp_model):
+            os.symlink('lib/hoclib', 'hoc')
+            os.symlink('lib/modlib', 'mod')
 
     def setup_dependent_package(self, module, dependent_spec):
         model_dir = '%s/models/%s' % (self.spec.prefix, dependent_spec.version)
