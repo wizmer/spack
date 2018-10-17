@@ -62,6 +62,13 @@ class Neuronmodelresource(Package):
         placement='bbp',
         destination='models'
     )
+    resource(
+        name='bbp-circuit',
+        git='ssh://bbpcode.epfl.ch/user/kumbhar/simtestdata',
+        branch='master',
+        placement='bbp/circuit',
+        destination='models'
+    )
 
     def install(self, spec, prefix):
         shutil.copytree('models', '%s/models' % (prefix), symlinks=False)
@@ -70,6 +77,9 @@ class Neuronmodelresource(Package):
         with working_dir(bbp_model):
             os.symlink('lib/hoclib', 'hoc')
             os.symlink('lib/modlib', 'mod')
+        bbp_circuit = prefix + '/models/bbp/circuit/build'
+        with working_dir(bbp_circuit, create=True):
+            cmake('..')
 
     def setup_dependent_package(self, module, dependent_spec):
         model_dir = '%s/models/%s' % (self.spec.prefix, dependent_spec.version)
