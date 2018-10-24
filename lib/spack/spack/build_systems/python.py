@@ -471,3 +471,10 @@ class PythonPackage(PackageBase):
                 view.remove_file(src, dst)
             else:
                 os.remove(dst)
+
+    def setup_environment(self, spack_env, run_env):
+        """Set up the compile and runtime environments for a package.
+           Set PYTHONPATH if package is specified as external.
+	"""
+        if self.spec.external:
+            run_env.prepend_path('PYTHONPATH', self.prefix)
