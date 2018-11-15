@@ -43,7 +43,7 @@ class Synapsetool(CMakePackage):
 
     variant('mpi', default=True, description="Enable MPI backend")
     variant('shared', default=True, description="Build shared library")
-    variant('sonata', default=False, description="Enable SONATA support")
+    variant('sonata', default=True, description="Enable SONATA support")
 
     depends_on('boost@1.55:')
     depends_on('cmake@3.0:', type='build')
