@@ -17,7 +17,8 @@ class PyMatplotlib(PythonPackage):
 
     version('3.0.2', 'd6af3dfae557ea4046fef96cf617fa24')
     version('3.0.0', '39c7f44c8fa0f24cbf684137371ce4ae')
-    version('2.2.3', '403b0bddd751d71187416f20d4cff100')
+    # NOTE: 3.0.0 is not compatible with python 2
+    version('2.2.3', '403b0bddd751d71187416f20d4cff100', preferred=True)
     version('2.2.2', 'dd1e49e041309a7fd4e32be8bf17c3b6')
     version('2.0.2', '061111784278bde89b5d4987014be4ca')
     version('2.0.0', '7aa54b06327f0e1c4f3877fc2f7d6b17')
@@ -50,7 +51,9 @@ class PyMatplotlib(PythonPackage):
     # directories (i.e., matplotlib and basemap)
     depends_on('py-setuptools', type=('build', 'run'))
 
-    depends_on('python@3.5:', when='@3:')
+    # FIXME: mirror failure with py-bb5
+    # depends_on('python@3.5:', when='@3:')
+
     depends_on('libpng@1.2:')
     depends_on('freetype@2.3:')
     patch('freetype-include-path.patch', when='@2.2.2:2.9.9')  # Patch to pick up correct freetype headers

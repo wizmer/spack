@@ -11,6 +11,10 @@ class Rapidjson(CMakePackage):
 
     homepage = "http://rapidjson.org"
     url      = "https://github.com/Tencent/rapidjson/archive/v1.1.0.tar.gz"
+    git      = "https://github.com/Tencent/rapidjson"
+
+    # NOTE : tag master for time being (see Tencent/rapidjson/issues/1341)
+    version('1.1.1', git = git, commit='66eb6067b10')
 
     version('1.1.0', 'badd12c511e081fec6c89c43a7027bce')
     version('1.0.2', '97cc60d01282a968474c97f60714828c')
