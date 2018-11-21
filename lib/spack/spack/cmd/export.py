@@ -110,6 +110,10 @@ def export(parser, args):
 
     pymods = {}
 
+    # variants that needs to be propogated to packages.yaml even if they
+    # have default value (workaround for external packages)
+    variants_to_keep = ['mpi', 'python']
+
     # Dump per package, make sure that none are forgotten
     for pkg, pkg_specs in pkgs.items():
         paths = syaml_dict()
@@ -127,7 +131,7 @@ def export(parser, args):
                 default = None
                 if k in spec.package.variants:
                     default = spec.package.variants[k].default
-                if v.value != default:
+                if v.value != default or v.name in variants_to_keep:
                     if v.value in (True, False):
                         bflags.append(v)
                     elif v.name != 'patches':
