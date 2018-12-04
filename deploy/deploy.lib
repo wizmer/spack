@@ -55,20 +55,53 @@ for stage in $stages; do
 done
 
 log() {
-    echo "$(tput bold)### $@$(tput sgr0)" >&2
+    date="$(tput smul)$(date +%H:%M:%S)$(tput rmul)"
+    echo "$(tput bold)### ${date} $@$(tput sgr0)" >&2
 }
 
-install_dir_name() {
+install_dir_raw() {
     # Create an installation directory name based on the environment
     # variables set.
     what=$1
     date="${DEPLOYMENT_DATE:-${DEFAULT_DEPLOYMENT_DATE}}"
     name="${DEPLOYMENT_ROOT}/install/${what}/${date}"
+    echo "${name}"
+}
+
+install_dir_name() {
+    # Create an installation directory name based on the environment
+    # variables set. Resovles any symlinks.
+    what=$1
+    name=$(install_dir_raw ${what})
     if [[ -L "${name}" ]]; then
         echo "$(readlink -f ${name})"
     else
         echo "${name}"
     fi
+}
+
+set_latest() {
+    # Set the "latest" symlink to the current deployment date
+    what=$1
+    source="$(install_dir_name ${what})"
+    DEPLOYMENT_DATE="latest"
+    target="$(install_dir_raw ${what})"
+    if [[ -e "${target}" && ! -L "${target}" ]]; then
+        log "link target is not a symlink: ${target}"
+        return 1
+    elif [[ "${source}" = "${target}" ]]; then
+        log "cannot link to itself: ${source}"
+        log "returning!"
+        return 0
+    elif [[ ! -d "${source}" ]]; then
+        log "link source is not a directory: ${source}"
+        return 1
+    fi
+    log "creating symlink for ${what}"
+    log "...from ${source}"
+    log "...to   ${target}"
+    rm -f "${target}"
+    ln -s "${source}" "${target}"
 }
 
 install_dir() {
@@ -117,24 +150,40 @@ last_install_dir() {
     echo "$(readlink -f ${name})"
 }
 
-update_module_path() {
+list_module_paths() {
+    # Print all module paths up to and including the stage passed as first
+    # argument
     local what="$1"
     while read -d' ' stage; do
+        local base="$(last_install_dir ${stage})"
+        for modpath in ${base}/modules/tcl/*; do
+            if [[ -d "${modpath}" ]]; then
+                echo "${modpath}"
+            fi
+        done
+
         if [[ "${stage}" = "${what}" ]]; then
             return
         fi
-
-        local base="$(last_install_dir ${stage})"
-        for modpath in ${base}/modules/tcl/*; do
-            grep -oF "${modpath}" <<< ${MODULEPATH} || {
-                if [[ -d "${modpath}" ]]; then
-                    log "appending '${modpath}' to MODULEPATH"
-                    MODULEPATH="${MODULEPATH}${MODULEPATH:+:}${modpath}"
-                    export MODULEPATH
-                fi
-            }
-        done
     done <<< "${stages}"
+}
+
+update_module_path() {
+    # Export MODULEPATH including all stages up to and excluding the one
+    # passed as first argument
+    local what="$1"
+    local modpaths=$(list_module_paths ${what})
+
+    for modpath in ${modpaths}; do
+        if [[ "${stage}" = "${what}" ]]; then
+            return
+        fi
+        grep -oF "${modpath}" <<< ${MODULEPATH} || {
+            log "appending to MODULEPATH: ${modpath}"
+            MODULEPATH="${MODULEPATH}${MODULEPATH:+:}${modpath}"
+            export MODULEPATH
+        }
+    done
 }
 
 update_chain_config() {
@@ -152,7 +201,7 @@ update_chain_config() {
         if [[ "${stage}" = "${what}" ]]; then
             break
         fi
-        if [[ "${include_in_chain[${stage}]}" != "yes" ]]; then
+        if [[ "${include_in_chain[${stage}]}" = "yes" ]]; then
             chains="${stage}${chains:+ }${chains}"
         fi
     done
@@ -165,8 +214,9 @@ update_chain_config() {
     grep -e ${ckey} ${conf} || {
         echo "  upstream_spack_installations:" >> "${conf}"
     }
+    log "chaining up ${what}"
     for stage in ${chains}; do
-        log "chaining up '${stage}'"
+        log "...adding ${stage}"
         cat << EOF >> "${conf}"
   - spack-install-prefix: $(last_install_dir ${stage})
     modules:
@@ -216,8 +266,27 @@ configure_compilers() {
     sed  -i 's#.*f\(77\|c\): null#      f\1: /usr/bin/gfortran#' ${HOME}/.spack/compilers.yaml
 }
 
+setup_mirror() {
+    if [[ -z "${SPACK_SOURCE_MIRROR_DIR:+x}" ]]; then
+        log "need to have \$SPACK_SOURCE_MIRROR_DIR set!"
+        return 1
+    fi
+    log "adding source mirror: ${SPACK_SOURCE_MIRROR_DIR}"
+    spack mirror add --scope=user my_source_mirror file://${SPACK_SOURCE_MIRROR_DIR} || log "source mirror already added!"
+
+    if [[ -z "${SPACK_BINARY_MIRROR_DIR:+x}" ]]; then
+        log "need to have \$SPACK_BINARY_MIRROR_DIR set!"
+        return 1
+    elif [[ "${BUILDCACHE:-x}" != "true" ]]; then
+        return
+    fi
+    log "adding binary mirror: ${SPACK_BINARY_MIRROR_DIR}"
+    spack mirror add --scope=user my_binary_mirror file://${SPACK_BINARY_MIRROR_DIR} || log "binary mirror already added!"
+}
+
 populate_mirror() {
     what=$1
+
     log "populating mirror for ${what}"
 
     specfile="$(install_dir ${what})/data/specs.txt"
@@ -230,15 +299,14 @@ populate_mirror() {
 
     if [[ "${what}" = "compilers" ]]; then
         for compiler in intel intel-parallel-studio pgi; do
-            mkdir -p ${SPACK_MIRROR_DIR}/${compiler}
-            cp ${DEPLOYMENT_DATA}/${compiler}/* ${SPACK_MIRROR_DIR}/${compiler}/
+            mkdir -p ${SPACK_SOURCE_MIRROR_DIR}/${compiler}
+            cp ${DEPLOYMENT_DATA}/${compiler}/* ${SPACK_SOURCE_MIRROR_DIR}/${compiler}/
         done
     fi
 
     log "found the following specs"
     echo "${spec_list}"
-    spack mirror create -D -d ${SPACK_MIRROR_DIR} ${spec_list}
-    spack mirror add --scope=user my_mirror ${SPACK_MIRROR_DIR} || log "mirror already added!"
+    spack mirror create -D -d ${SPACK_SOURCE_MIRROR_DIR} ${spec_list}
 }
 
 check_specs() {
@@ -303,6 +371,27 @@ copy_configuration() {
     fi
 }
 
+copy_configuration_user() {
+    what="$1"
+
+    local source="$(install_dir ${what})/data"
+    local target="${DEPLOYMENT_ROOT}/user"
+    local modpaths=$(list_module_paths ${what})
+
+    log "copying configuration"
+    log "...from ${source}"
+    log "...into ${target}"
+
+    mkdir -p "${target}"
+    cp ${source}/{compilers,.spack/config,packages}.yaml ${target}
+
+    rm -f ${target}/modules.sh
+    for modpath in ${modpaths}; do
+        echo "MODULEPATH=\"\${MODULEPATH}\${MODULEPATH:+:}${modpath}\"" >> ${target}/modules.sh
+    done
+    echo "export MODULEPATH" >> ${target}/modules.sh
+}
+
 install_specs() {
     what="$1"
 
@@ -327,37 +416,71 @@ install_specs() {
     log "installed specs"
     spack find
 
-    populate_mirror "${what}"
-
     log "gathering specs"
     spec_list=$(spack filter --not-installed $(< ${HOME}/specs.txt))
 
-    if [[ "${spec_list}" == *[[:space:]]* ]]; then
-        log "found the following uninstalled specs"
-        echo "${spec_list}"
-        log "...checking specs"
-        spack spec -Il ${spec_list}
+    setup_mirror
+
+    # INSTALLED CACHED
+    if [[ "${BUILDCACHE:-x}" = "true" ]]; then
+        log "installing from buildcache"
+        install_commands=$(spack buildcache list ${spec_list}|sed -n '/^spack buildcache install/p')
+        while read cmd; do
+            $cmd
+        done <<< "${install_commands}"
+
+        log "updating gathered specs"
+        spec_list=$(spack filter --not-installed $(< ${HOME}/specs.txt))
     fi
 
+    populate_mirror "${what}"
+
+    # SPEC CHECK
+    if [[ -n "${spec_list}" ]]; then
+        log "found the following uninstalled specs"
+        echo "${spec_list}"
+        log "checking specs"
+        spack spec -Il ${spec_list}
+    else
+        log "no specs to install?"
+    fi
+
+    # INSTALL
+    #
+    # use all specs to get the right unit test setup
     log "running installation for all specs"
     spack install -y --log-format=junit --log-file="${HOME}/stack.xml" $(< "${HOME}/specs.txt")
 
-    if [[ "${what}" = "serial-libraries" ]]; then
+    # BUILD CACHE
+    if [[ -n "${spec_list}" && -n "${SPACK_BINARY_MIRROR_DIR:+x}" ]]; then
+        log "creating build caches"
         while read spec; do
-            if [[ "${spec}" = py-* ]]; then
-                spack activate $spec || true
-            fi
-        done < "${HOME}/specs.txt"
+            log "...caching ${spec}"
+            spack buildcache create -f "${spec}" || true
+        done <<< "${spec_list}"
+        log "syncing build cache to mirror"
+        mkdir -p "${SPACK_BINARY_MIRROR_DIR}"
+        rsync -av build_cache "${SPACK_BINARY_MIRROR_DIR}"
     fi
+
+    # Do not activate any packages for now. Maybe with lmod…
+    # if [[ "${what}" = "serial-libraries" ]]; then
+    #     log "running activation for python"
+    #     while read spec; do
+    #         if [[ "${spec}" = py-* ]]; then
+    #             spack activate $spec || true
+    #         fi
+    #     done < "${HOME}/specs.txt"
+    # fi
 
     mkdir -p "${WORKSPACE:-.}/stacks"
     cp "${HOME}/stack.xml" "${WORKSPACE:-.}/stacks/${what}.xml"
 
-    spack module tcl refresh -y
+    spack module tcl refresh -y --latest
     . ${DEPLOYMENT_ROOT}/deploy/spack/share/spack/setup-env.sh
     if [[ "${export_packages[${what}]}" = "yes" ]]; then
         log "augmenting packages.yaml"
-        spack export --scope=user --module tcl --explicit > "${HOME}/packages.yaml"
+        spack export --scope=user --module tcl --explicit --exclude 'py-.*' > "${HOME}/packages.yaml"
     else
         log "copying packages.yaml"
         cp "${HOME}/.spack/packages.yaml" "${HOME}"

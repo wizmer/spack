@@ -1,3 +1,15 @@
+def post_process(stage, redeploy) {
+    dir("${BASEDIR}") {
+        if (redeploy) {
+            sh "./deploy.sh -l ${stage}"
+        }
+
+        if (stage == 'applications') {
+            sh "./deploy.sh -c ${stage}"
+        }
+    }
+}
+
 pipeline {
     agent {
         label 'bb5-full'
@@ -8,18 +20,24 @@ pipeline {
     }
 
     parameters {
-        string(name: 'DEPLOYMENT_DATE', defaultValue: 'latest', description: 'date to use when deploying, in YYYY-MM-DD format, or "latest".')
-        booleanParam(name: 'build_compilers', defaultValue: true, description: 'Build compilers')
-        booleanParam(name: 'build_tools', defaultValue: true, description: 'Build system tools')
-        booleanParam(name: 'build_serial_libraries', defaultValue: true, description: 'Build serial libraries')
-        booleanParam(name: 'build_parallel_libraries', defaultValue: true, description: 'Build parallel libraries')
-        booleanParam(name: 'build_applications', defaultValue: true, description: 'Build BBP specific applications')
+        string(name: 'DEPLOYMENT_DATE',
+               defaultValue: 'latest',
+               description: 'Date to use when deploying, in YYYY-MM-DD format, or "latest".')
+        booleanParam(name: 'REDEPLOY',
+                     defaultValue: false,
+                     description: 'Set the "latest" symlink to the currently built deployment')
+        booleanParam(name: 'BUILDCACHE',
+                     defaultValue: true,
+                     description: 'Use cache to install already compiled software')
+        text(name: 'STAGES',
+             defaultValue: 'compilers\ntools\nserial-libraries\nparallel-libraries\napplications',
+             description: 'Which parts of the deployment chain to build')
     }
 
     environment {
         DEPLOYMENT_ROOT = "/gpfs/bbp.cscs.ch/apps/hpc/test/jenkins/deployment"
         BASEDIR = "${DEPLOYMENT_ROOT}/deploy/spack/deploy"
-        TMPDIR = "/dev/shm/jenkins"
+        // TMPDIR = "/dev/shm/jenkins"
     }
 
     stages {
@@ -51,7 +69,7 @@ pipeline {
         stage('Compilers') {
             when {
                 expression {
-                    return params.build_compilers
+                    return 'compilers' in params.STAGES.tokenize()
                 }
             }
 
@@ -66,13 +84,17 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/compilers.xml"
                     junit testResults: "stacks/compilers.xml", allowEmptyResults: true
                 }
+
+                success {
+                    post_process("compilers", params.REDEPLOY)
+                }
             }
         }
 
         stage('Tools') {
             when {
                 expression {
-                    return params.build_tools
+                    return 'tools' in params.STAGES.tokenize()
                 }
             }
 
@@ -87,13 +109,17 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/tools.xml"
                     junit testResults: "stacks/tools.xml", allowEmptyResults: true
                 }
+
+                success {
+                    post_process("tools", params.REDEPLOY)
+                }
             }
         }
 
         stage('Serial Libraries') {
             when {
                 expression {
-                    return params.build_serial_libraries
+                    return 'serial-libraries' in params.STAGES.tokenize()
                 }
             }
 
@@ -108,13 +134,17 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/serial-libraries.xml"
                     junit testResults: "stacks/serial-libraries.xml", allowEmptyResults: true
                 }
+
+                success {
+                    post_process("serial-libraries", params.REDEPLOY)
+                }
             }
         }
 
         stage('Parallel Libraries') {
             when {
                 expression {
-                    return params.build_parallel_libraries
+                    return 'parallel-libraries' in params.STAGES.tokenize()
                 }
             }
 
@@ -129,13 +159,17 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/parallel-libraries.xml"
                     junit testResults: "stacks/parallel-libraries.xml", allowEmptyResults: true
                 }
+
+                success {
+                    post_process("parallel-libraries", params.REDEPLOY)
+                }
             }
         }
 
         stage('Applications') {
             when {
                 expression {
-                    return params.build_applications
+                    return 'applications' in params.STAGES.tokenize()
                 }
             }
 
@@ -149,6 +183,10 @@ pipeline {
                 always {
                     archiveArtifacts artifacts: "stacks/applications.xml"
                     junit testResults: "stacks/applications.xml", allowEmptyResults: true
+                }
+
+                success {
+                    post_process("applications", params.REDEPLOY)
                 }
             }
         }
