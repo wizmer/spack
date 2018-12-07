@@ -83,7 +83,8 @@ def setup_parser(subparser):
     install.set_defaults(func=installtarball)
 
     listcache = subparsers.add_parser('list', help=listspecs.__doc__)
-    arguments.add_common_arguments(listcache, ['long', 'very_long'])
+    arguments.add_common_arguments(listcache,
+                                   ['long', 'very_long', 'tags'])
     listcache.add_argument('-v', '--variants',
                            action='store_true',
                            dest='variants',
