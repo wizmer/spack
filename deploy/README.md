@@ -3,11 +3,15 @@
 This is work-in-progress instructions for deploying software stack with
 Spack.
 
-[Jump to deployment description](#deployment-workflow)
+## Contents
+
+* [Spec Generation](#spec-generation)
+* [Deployment Description](#deployment-workflow)
+* [Pull Request Building Description](#pull-request-workflow)
 
 ###### CREDIT : Based on [spack-packagelist](https://github.com/epfl-scitas/spack-packagelist)
 
-## To Experiment with Spec Generation
+## Spec Generation
 
 ### Setup Environment for Experimentation
 
@@ -289,8 +293,7 @@ To generate and install the specs to be installed for all stages, use:
 This results in the following directory structure:
 
     ${DEPLOYMENT_ROOT}
-    ├── deploy
-    │   ├── spack
+    ├── spack
     │   └── venv
     └── install
         ├── applications
@@ -305,7 +308,7 @@ This results in the following directory structure:
         │           ├── spack_deploy.env
         │           ├── spack_deploy.version
         │           └── specs.txt
-        ├── libraries
+        ├── *-libraries
         │   └── 2018-11-13
         │       └── data
         │           ├── spack_deploy.env
@@ -330,18 +333,54 @@ After a successful deployment, all user facing configuration is copied into
 a separate directory:
 
     ${DEPLOYMENT_ROOT}
-    └── user
+    └── config
         ├── compilers.yaml
         ├── config.yaml
         ├── packages.yaml
         └── modules.sh
 
+And modules will be generated in the following scheme:
+
+    ${DEPLOYMENT_ROOT}
+    └── modules
+        ├── applications
+        │   ├── 2018-10
+        │   └── 2018-11
+        │       └── data
+        ├── compilers
+        │   ├── 2018-10
+        │   └── 2018-11
+        │       └── data
+        ├── *-libraries
+        │   ├── 2018-10
+        │   └── 2018-11
+        │       └── data
+        └── tools
+            ├── 2018-10
+            └── 2018-11
+                └── data
 
 ### Jenkins Pipeline Workflow
 
 See `Jenkinsfile`.
 All package collections referenced above are triggered as separate stages,
 calling `deploy.sh` with appropriate arguments.
+
+## Pull Request Workflow
+
+To build pull requests, each one will be stored in a separate
+`${DEPLOYMENT_ROOT}`:
+
+    ${DEPLOYMENT_ROOT}
+    └── pulls
+        └── XXXX
+            ├── deploy
+            │   ├── spack
+            │   └── venv
+            └── install
+
+Every stage within the pull request will chain to its original upstream and
+all dependencies.
 
 #### Open Items
 

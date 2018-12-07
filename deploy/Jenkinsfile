@@ -1,13 +1,43 @@
-def post_process(stage, redeploy) {
+def deployment_directory(parent) {
+    def pull = env.ghprbPullId
+    if (parent || pull == null) {
+        return "/gpfs/bbp.cscs.ch/apps/hpc/test/jenkins/deployment"
+    } else {
+        return "/gpfs/bbp.cscs.ch/apps/hpc/test/jenkins/deployment/pulls/${pull}"
+    }
+}
+
+def post_process(stage, redeploy, reconfigure) {
     dir("${BASEDIR}") {
         if (redeploy) {
             sh "./deploy.sh -l ${stage}"
         }
 
-        if (stage == 'applications') {
+        if (reconfigure) {
             sh "./deploy.sh -c ${stage}"
         }
     }
+}
+
+def deployment_stages() {
+    return ['compilers',
+            'tools',
+            'external-libraries',
+            'serial-libraries',
+            'parallel-libraries',
+            'applications']
+}
+
+def run_stages() {
+    stages = deployment_stages()
+    start = stages.indexOf(params.STAGE)
+    end = stages.size - 1
+    return stages[start..end]
+}
+
+def run_stage(current) {
+    stages = run_stages()
+    return current in run_stages()
 }
 
 pipeline {
@@ -20,33 +50,74 @@ pipeline {
     }
 
     parameters {
-        string(name: 'DEPLOYMENT_DATE',
-               defaultValue: 'latest',
-               description: 'Date to use when deploying, in YYYY-MM-DD format, or "latest".')
         booleanParam(name: 'REDEPLOY',
                      defaultValue: false,
                      description: 'Set the "latest" symlink to the currently built deployment')
+        string(name: 'DEPLOYMENT_DATE',
+               defaultValue: 'latest',
+               description: 'Date to use when redeploying, in YYYY-MM-DD format')
+        choice(name: 'STAGE',
+               choices: deployment_stages().join('\n'),
+               description: 'Stage from which to restart the building process')
+        booleanParam(name: 'UPDATE_CONFIGURATION',
+                     defaultValue: true,
+                     description: 'Update the user-facing configuration files')
         booleanParam(name: 'BUILDCACHE',
                      defaultValue: true,
                      description: 'Use cache to install already compiled software')
-        text(name: 'STAGES',
-             defaultValue: 'compilers\ntools\nserial-libraries\nparallel-libraries\napplications',
-             description: 'Which parts of the deployment chain to build')
+        booleanParam(name: 'SOURCECACHE',
+                     defaultValue: true,
+                     description: 'Use cache to install already downloaded sources')
     }
 
     environment {
-        DEPLOYMENT_ROOT = "/gpfs/bbp.cscs.ch/apps/hpc/test/jenkins/deployment"
-        BASEDIR = "${DEPLOYMENT_ROOT}/deploy/spack/deploy"
+        DEPLOYMENT_UPSTREAM = deployment_directory(true)
+        DEPLOYMENT_ROOT = deployment_directory(false)
+        BASEDIR = "${DEPLOYMENT_ROOT}/spack/deploy"
         TMPDIR = "/dev/shm/jenkins"
     }
 
     stages {
         stage('Setup') {
+            when {
+                not {
+                    expression {
+                        return env.ghprbPullId
+                    }
+                }
+            }
+
+            // General setup: make sure that Spack is installed and that
+            // license files are available to Spack
+            steps {
+                dir("${DEPLOYMENT_ROOT}/spack") {
+                    git(url: "https://github.com/BlueBrain/spack.git", branch: "spack_chain")
+                }
+                dir("${DEPLOYMENT_ROOT}/spack/etc/spack/licenses") {
+                    git(url: "ssh://bbpcode.epfl.ch/user/kumbhar/spack-licenses")
+                }
+            }
+        }
+
+        stage('PR Setup') {
+            when {
+                expression {
+                    return env.ghprbPullId
+                }
+            }
+
             // General setup: make sure that Spack is installed and that
             // license files are available to Spack
             steps {
                 dir("${DEPLOYMENT_ROOT}/deploy/spack") {
-                    git(url: "https://github.com/BlueBrain/spack.git", branch: "spack_chain")
+                    checkout([$class: 'GitSCM',
+                              branches: [[name: "FETCH_HEAD"]],
+                              extensions: [[$class: 'LocalBranch']],
+                              userRemoteConfigs: [[
+                                    refspec: "+refs/pull/${env.ghprbPullId}/head:refs/remotes/origin/pull/${env.ghprbPullId}", 
+                                    url: "https://github.com/BlueBrain/spack.git"
+                              ]]])
+
                 }
                 dir("${DEPLOYMENT_ROOT}/deploy/spack/etc/spack/licenses") {
                     git(url: "ssh://bbpcode.epfl.ch/user/kumbhar/spack-licenses")
@@ -69,7 +140,7 @@ pipeline {
         stage('Compilers') {
             when {
                 expression {
-                    return 'compilers' in params.STAGES.tokenize()
+                    return run_stage('compilers')
                 }
             }
 
@@ -86,7 +157,7 @@ pipeline {
                 }
 
                 success {
-                    post_process("compilers", params.REDEPLOY)
+                    post_process("compilers", params.REDEPLOY, false)
                 }
             }
         }
@@ -94,7 +165,7 @@ pipeline {
         stage('Tools') {
             when {
                 expression {
-                    return 'tools' in params.STAGES.tokenize()
+                    return run_stage('tools')
                 }
             }
 
@@ -111,15 +182,42 @@ pipeline {
                 }
 
                 success {
-                    post_process("tools", params.REDEPLOY)
+                    post_process("tools", params.REDEPLOY, false)
                 }
             }
         }
 
+        stage('External Libraries') {
+            when {
+                expression {
+                    return run_stage('external-libraries')
+                }
+            }
+
+            steps {
+                dir("${BASEDIR}") {
+                    sh "./deploy.sh external-libraries"
+                }
+            }
+
+            post {
+                always {
+                    archiveArtifacts artifacts: "stacks/external-libraries.xml"
+                    junit testResults: "stacks/external-libraries.xml", allowEmptyResults: true
+                }
+
+                success {
+                    post_process("external-libraries", params.REDEPLOY, false)
+                }
+            }
+        }
+
+
+
         stage('Serial Libraries') {
             when {
                 expression {
-                    return 'serial-libraries' in params.STAGES.tokenize()
+                    return run_stage('serial-libraries')
                 }
             }
 
@@ -136,7 +234,7 @@ pipeline {
                 }
 
                 success {
-                    post_process("serial-libraries", params.REDEPLOY)
+                    post_process("serial-libraries", params.REDEPLOY, false)
                 }
             }
         }
@@ -144,7 +242,7 @@ pipeline {
         stage('Parallel Libraries') {
             when {
                 expression {
-                    return 'parallel-libraries' in params.STAGES.tokenize()
+                    return run_stage('parallel-libraries')
                 }
             }
 
@@ -161,7 +259,7 @@ pipeline {
                 }
 
                 success {
-                    post_process("parallel-libraries", params.REDEPLOY)
+                    post_process("parallel-libraries", params.REDEPLOY, false)
                 }
             }
         }
@@ -169,13 +267,16 @@ pipeline {
         stage('Applications') {
             when {
                 expression {
-                    return 'applications' in params.STAGES.tokenize()
+                    return run_stage('applications')
                 }
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh applications"
+                withEnv(['SOURCECACHE=false',
+                         'BUILDCACHE=false']) {
+                    dir("${BASEDIR}") {
+                        sh "./deploy.sh applications"
+                    }
                 }
             }
 
@@ -186,7 +287,7 @@ pipeline {
                 }
 
                 success {
-                    post_process("applications", params.REDEPLOY)
+                    post_process("applications", params.REDEPLOY, params.UPDATE_CONFIGURATION)
                 }
             }
         }

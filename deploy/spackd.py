@@ -5,7 +5,6 @@ import itertools
 import click
 import yaml
 
-
 # add support for include directive
 # see : http://code.activestate.com/recipes/577613-yaml-include-support/
 def yaml_include(loader, node):
@@ -104,11 +103,11 @@ class ProductionEnvironment(object):
             compiler = item.pop('compiler')
             architecture = item.pop('architecture')
             for base_spec in specs:
-                if base_spec in blacklist:
-                    continue
                 parts = [base_spec]
                 parts.extend([v for v in item.values()])
                 spec = ' ^'.join(parts)
+                if base_spec in blacklist or spec in blacklist:
+                    continue
                 yield Item(spec, architecture, compiler)
 
     def items(self):

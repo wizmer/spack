@@ -14,10 +14,13 @@ packages:
   gnu-stable-serial:
     target_matrix:
       - gnu-stable
+      - gnu-stable-py2
     requires:
       - architecture
       - compiler
       - python
+    blacklist:
+      - 'py-bb5 ^python@2.7.15'
     specs:
       - py-argcomplete
       - py-argparse
