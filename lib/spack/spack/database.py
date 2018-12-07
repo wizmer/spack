@@ -805,7 +805,8 @@ class Database(object):
     def _get_matching_spec_key(self, spec, **kwargs):
         """Get the exact spec OR get a single spec that matches."""
         key = spec.dag_hash()
-        if key not in self._data:
+        upstream, record = self.query_by_spec_hash(key)
+        if not record:
             match = self.query_one(spec, **kwargs)
             if match:
                 return match.dag_hash()
@@ -815,7 +816,8 @@ class Database(object):
     @_autospec
     def get_record(self, spec, **kwargs):
         key = self._get_matching_spec_key(spec, **kwargs)
-        return self._data[key]
+        upstream, record = self.query_by_spec_hash(key)
+        return record
 
     def _decrement_ref_count(self, spec):
         key = spec.dag_hash()
@@ -884,14 +886,18 @@ class Database(object):
 
             for relative in to_add:
                 hash_key = relative.dag_hash()
-                if hash_key not in self._data:
+                upstream, record = self.query_by_spec_hash(hash_key)
+                if not record:
                     reltype = ('Dependent' if direction == 'parents'
                                else 'Dependency')
-                    tty.warn("Inconsistent state! %s %s of %s not in DB"
-                             % (reltype, hash_key, spec.dag_hash()))
+                    msg = ("Inconsistent state! %s %s of %s not in DB"
+                           % (reltype, hash_key, spec.dag_hash()))
+                    if self._fail_when_missing_deps:
+                        raise MissingDependenciesError(msg)
+                    tty.warn(msg)
                     continue
 
-                if not self._data[hash_key].installed:
+                if not record.installed:
                     continue
 
                 relatives.add(relative)
@@ -1024,15 +1030,17 @@ class Database(object):
             return sorted(self._query(*args, **kwargs))
 
     def query(self, *args, **kwargs):
-
-        results = []
+        upstream_results = []
         for upstream_db in self.upstream_dbs:
             # queries for upstream DBs need to *not* lock - we may not
             # have permissions to do this and the upstream DBs won't know about
             # us anyway (so e.g. they should never uninstall specs)
-            results.extend(upstream_db._query(*args, **kwargs) or [])
+            upstream_results.extend(upstream_db._query(*args, **kwargs) or [])
 
-        results.extend(self.query_local(*args, **kwargs))
+        local_results = set(self.query_local(*args, **kwargs))
+
+        results = list(local_results) + list(
+            x for x in upstream_results if x not in local_results)
 
         return sorted(results)
 
@@ -1049,9 +1057,9 @@ class Database(object):
         return concrete_specs[0] if concrete_specs else None
 
     def missing(self, spec):
-        with self.read_transaction():
-            key = spec.dag_hash()
-            return key in self._data and not self._data[key].installed
+        key = spec.dag_hash()
+        upstream, record = self.query_by_spec_hash(key)
+        return record and not record.installed
 
 
 class UpstreamDatabaseLockingError(SpackError):
