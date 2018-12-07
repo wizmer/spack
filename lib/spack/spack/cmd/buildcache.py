@@ -16,11 +16,9 @@ import spack.relocate
 import spack.repo
 import spack.spec
 import spack.store
+import spack.config
 
 from spack.error import SpecError
-import spack.config
-import spack.repo
-import spack.store
 from spack.paths import etc_path
 from spack.spec import Spec, save_dependency_spec_yamls
 from spack.spec_set import CombinatorialSpecSet
@@ -59,6 +57,10 @@ def setup_parser(subparser):
                                             "building package(s)")
     create.add_argument('-y', '--spec-yaml', default=None,
                         help='Create buildcache entry for spec from yaml file')
+    create.add_argument('--no-dependencies',
+                        action='store_false',
+                        dest='recurse_dependencies',
+                        help='do not recursively traverse spec dependencies')
     create.add_argument(
         'packages', nargs=argparse.REMAINDER,
         help="specs of packages to create buildcache for")
@@ -318,6 +320,8 @@ def createtarball(args):
         else:
             tty.msg('adding matching spec %s' % match.format())
             specs.add(match)
+            if not args.recurse_dependencies:
+                continue
             tty.msg('recursing dependencies')
             for d, node in match.traverse(order='post',
                                           depth=True,
