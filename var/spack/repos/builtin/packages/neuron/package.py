@@ -39,10 +39,10 @@ class Neuron(Package):
 
     homepage = "https://www.neuron.yale.edu/"
     url      = "http://www.neuron.yale.edu/ftp/neuron/versions/v7.5/nrn-7.5.tar.gz"
-    git      = "https://github.com/nrnhines/nrn.git"
+    git      = "https://github.com/pramodk/nrn.git"
 
     version('develop', branch='master')
-    version('2018-10', commit='b3097b7', preferred=True)
+    version('2018-10', commit='9110b6e44722cdb', preferred=True)
     version('2018-09', commit='9f36b13')
     version('7.6.2',   tag='7.6.2')
     # versions from url, with checksum
