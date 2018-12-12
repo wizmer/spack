@@ -1,8 +1,4 @@
 config:
-  install_tree: $SOFTS_DIR_PATH/install
-  source_cache: $SOFTS_DIR_PATH/.cache
-  module_roots:
-    tcl: $SOFTS_DIR_PATH/modules/tcl
   build_stage:
     - $tempdir
     - $SOFTS_DIR_PATH/.stage

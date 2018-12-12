@@ -28,11 +28,14 @@ modules:
       filter:
         environment_blacklist: ['CPATH', 'LIBRARY_PATH']
     naming_scheme: '${PACKAGE}/${VERSION}/${COMPILERNAME}'
-    hash_length: 0
+    hash_length: 10
     whitelist:
       - 'functionalizer'
       - 'neurodamus'
       - 'touchdetector'
+      - 'coreneuron'
+      - 'neuronperfmodels'
+      - 'tau'
     blacklist:
       - '%gcc'
       - '%intel'
