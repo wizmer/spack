@@ -55,7 +55,7 @@ class Neuron(Package):
     variant('multisend',     default=True,  description="Enable multi-send spike exchange")
     variant('profile',       default=False, description="Enable Tau profiling")
     variant('python',        default=True,  description='Enable python')
-    variant('shared',        default=True, description='Build shared libraries')
+    variant('shared',        default=False, description='Build shared libraries')
     variant('rx3d',          default=False, description="Enable cython translated 3-d rxd")
 
     depends_on('autoconf',   type='build')
@@ -70,7 +70,7 @@ class Neuron(Package):
     depends_on('python@2.6:', when='+python')
     depends_on('tau',         when='+profile')
 
-    conflicts('~shared', when='+python')
+    #conflicts('~shared', when='+python')
 
     filter_compiler_wrappers('*/bin/nrniv_makefile')
 

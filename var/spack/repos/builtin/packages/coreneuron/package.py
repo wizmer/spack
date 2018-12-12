@@ -41,7 +41,7 @@ class Coreneuron(CMakePackage):
     version('plasticity', git=url, preferred=True, submodules=True)
 
     # TODO: for performance benchmarking
-    version('perfmodels', git=url, branch='gpu', submodules=True)
+    version('perfmodels', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
