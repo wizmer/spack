@@ -28,6 +28,10 @@ def deployment_stages() {
             'applications']
 }
 
+def deployment_stages_string() {
+    return deployment_stages().join('\n')
+}
+
 def run_stages() {
     stages = deployment_stages()
     start = stages.indexOf(params.STAGE)
@@ -57,7 +61,7 @@ pipeline {
                defaultValue: 'latest',
                description: 'Date to use when redeploying, in YYYY-MM-DD format')
         choice(name: 'STAGE',
-               choices: deployment_stages().join('\n'),
+               choices: deployment_stages_string(),
                description: 'Stage from which to restart the building process')
         booleanParam(name: 'UPDATE_CONFIGURATION',
                      defaultValue: true,
