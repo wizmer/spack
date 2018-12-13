@@ -24,6 +24,7 @@ modules:
       - CMAKE_PREFIX_PATH
 
   tcl:
+    verbose: True
     hash_length: 0
     whitelist:
       - neuron
@@ -37,7 +38,7 @@ modules:
       - '%pgi'
     naming_scheme: '${PACKAGE}/${VERSION}'
     all:
-      autoload: 'direct'
+      autoload: 'all'
       suffixes:
         '^python@:2.99': '/python2'
         '^python@3:': '/python3'
