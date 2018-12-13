@@ -330,7 +330,11 @@ To link a successful deployment to `latest`:
     $ ./deploy.sh -l all
 
 After a successful deployment, all user facing configuration is copied into
-a separate directory:
+a separate directory with:
+
+    $ ./deploy.sh -c applications
+
+Resulting in additional files:
 
     ${DEPLOYMENT_ROOT}
     └── config
@@ -339,7 +343,11 @@ a separate directory:
         ├── packages.yaml
         └── modules.sh
 
-And modules will be generated in the following scheme:
+And modules can be copied into archival directories with:
+
+    $ ./deploy.sh -m all
+
+Resulting in:
 
     ${DEPLOYMENT_ROOT}
     └── modules

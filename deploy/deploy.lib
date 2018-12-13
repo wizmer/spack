@@ -467,6 +467,15 @@ copy_user_configuration() {
     echo "export MODULEPATH" >> ${target}/modules.sh
 }
 
+copy_modules() {
+    what="$1"
+
+    local source="$(install_dir ${what})/modules"
+    local target="${DEPLOYMENT_ROOT}/modules/${what}/$(date +%Y-%m)"
+
+    rsync -av "${source}/" "${target}"
+}
+
 install_specs() {
     what="$1"
 
