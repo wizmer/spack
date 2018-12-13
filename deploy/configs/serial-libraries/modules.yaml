@@ -26,6 +26,7 @@ modules:
   tcl:
     hash_length: 0
     whitelist:
+      - neuron
       - 'python%gcc'
       - spark
       - 'python-dev'
@@ -40,6 +41,7 @@ modules:
       suffixes:
         '^python@:2.99': '/python2'
         '^python@3:': '/python3'
+        '~mpi': '/serial'
       environment:
         set:
           '${PACKAGE}_ROOT': '${PREFIX}'
