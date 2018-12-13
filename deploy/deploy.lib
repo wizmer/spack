@@ -473,6 +473,10 @@ copy_modules() {
     local source="$(install_dir ${what})/modules"
     local target="${DEPLOYMENT_ROOT}/modules/${what}/$(date +%Y-%m)"
 
+    log "copying module files"
+    log "...from ${source}"
+    log "...into ${target}"
+
     rsync -av "${source}/" "${target}"
 }
 
