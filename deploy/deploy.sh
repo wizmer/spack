@@ -117,6 +117,6 @@ done
 
 for what in ${stages}; do
     if [[ ${desired[${what}]+_} && ${do_copy} = "yes" ]]; then
-        copy_configuration_user ${what}
+        copy_user_configuration ${what}
     fi
 done

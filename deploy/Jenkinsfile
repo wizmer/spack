@@ -7,15 +7,16 @@ def deployment_directory(parent) {
     }
 }
 
-def post_process(stage, redeploy, reconfigure) {
+def post_process() {
     dir("${BASEDIR}") {
-        if (redeploy) {
-            sh "./deploy.sh -l ${stage}"
+        def last = run_stages()[-1]
+        def stages = run_stages().join(' ')
+
+        if (params.REDEPLOY) {
+            sh "./deploy.sh -l ${stages}"
         }
 
-        if (reconfigure) {
-            sh "./deploy.sh -c ${stage}"
-        }
+        sh "./deploy.sh -c ${last}"
     }
 }
 
@@ -39,11 +40,6 @@ def run_stages() {
     return stages[start..end]
 }
 
-def run_stage(current) {
-    stages = run_stages()
-    return current in run_stages()
-}
-
 pipeline {
     agent {
         label 'bb5-full'
@@ -63,9 +59,6 @@ pipeline {
         choice(name: 'STAGE',
                choices: deployment_stages_string(),
                description: 'Stage from which to restart the building process')
-        booleanParam(name: 'UPDATE_CONFIGURATION',
-                     defaultValue: true,
-                     description: 'Update the user-facing configuration files')
         booleanParam(name: 'BUILDCACHE',
                      defaultValue: true,
                      description: 'Use cache to install already compiled software')
@@ -144,7 +137,7 @@ pipeline {
         stage('Compilers') {
             when {
                 expression {
-                    return run_stage('compilers')
+                    return 'compilers' in run_stages()
                 }
             }
 
@@ -159,17 +152,13 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/compilers.xml"
                     junit testResults: "stacks/compilers.xml", allowEmptyResults: true
                 }
-
-                success {
-                    post_process("compilers", params.REDEPLOY, false)
-                }
             }
         }
 
         stage('Tools') {
             when {
                 expression {
-                    return run_stage('tools')
+                    return 'tools' in run_stages()
                 }
             }
 
@@ -184,17 +173,13 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/tools.xml"
                     junit testResults: "stacks/tools.xml", allowEmptyResults: true
                 }
-
-                success {
-                    post_process("tools", params.REDEPLOY, false)
-                }
             }
         }
 
         stage('External Libraries') {
             when {
                 expression {
-                    return run_stage('external-libraries')
+                    return 'external-libraries' in run_stages()
                 }
             }
 
@@ -209,10 +194,6 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/external-libraries.xml"
                     junit testResults: "stacks/external-libraries.xml", allowEmptyResults: true
                 }
-
-                success {
-                    post_process("external-libraries", params.REDEPLOY, false)
-                }
             }
         }
 
@@ -221,7 +202,7 @@ pipeline {
         stage('Serial Libraries') {
             when {
                 expression {
-                    return run_stage('serial-libraries')
+                    return 'serial-libraries' in run_stages()
                 }
             }
 
@@ -236,17 +217,13 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/serial-libraries.xml"
                     junit testResults: "stacks/serial-libraries.xml", allowEmptyResults: true
                 }
-
-                success {
-                    post_process("serial-libraries", params.REDEPLOY, false)
-                }
             }
         }
 
         stage('Parallel Libraries') {
             when {
                 expression {
-                    return run_stage('parallel-libraries')
+                    return 'parallel-libraries' in run_stages()
                 }
             }
 
@@ -261,17 +238,13 @@ pipeline {
                     archiveArtifacts artifacts: "stacks/parallel-libraries.xml"
                     junit testResults: "stacks/parallel-libraries.xml", allowEmptyResults: true
                 }
-
-                success {
-                    post_process("parallel-libraries", params.REDEPLOY, false)
-                }
             }
         }
 
         stage('Applications') {
             when {
                 expression {
-                    return run_stage('applications')
+                    return 'applications' in run_stages()
                 }
             }
 
@@ -291,7 +264,7 @@ pipeline {
                 }
 
                 success {
-                    post_process("applications", params.REDEPLOY, params.UPDATE_CONFIGURATION)
+                    post_process()
                 }
             }
         }

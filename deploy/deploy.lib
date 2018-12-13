@@ -43,7 +43,7 @@ declare -A export_packages=([compilers]=no
 # Allowed values: yes/no
 declare -A include_in_chain=([compilers]=no
                              [tools]=no
-                             [external-libraries]=yes
+                             [external-libraries]=no
                              [serial-libraries]=yes
                              [parallel-libraries]=yes
                              [applications]=yes)
@@ -446,11 +446,11 @@ copy_configuration() {
     chmod 600 "${DEPLOYMENT_ROOT}/spack/opt/spack/gpg/"*
 }
 
-copy_configuration_user() {
+copy_user_configuration() {
     what="$1"
 
     local source="$(install_dir ${what})/data"
-    local target="${DEPLOYMENT_ROOT}/user"
+    local target="${DEPLOYMENT_ROOT}/config"
     local modpaths=$(list_module_paths ${what})
 
     log "copying configuration"
