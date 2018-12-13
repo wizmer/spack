@@ -33,7 +33,7 @@ packages:
       - metis@5.1.0
       - ncurses@5.9
       - openblas@0.3.3
-      - python@2.7.17
+      - python@2.7.15
       - python@3.6.5
       - qhull@2015.2
       # - qt@5.10.0
