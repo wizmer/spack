@@ -9,6 +9,7 @@ def deployment_directory(parent) {
 
 def post_process() {
     dir("${BASEDIR}") {
+        def pull = env.ghprbPullId
         def last = run_stages()[-1]
         def stages = run_stages().join(' ')
 
@@ -16,7 +17,10 @@ def post_process() {
             sh "./deploy.sh -l ${stages}"
         }
 
-        sh "./deploy.sh -m ${stages}"
+        if (pull == null) {
+            sh "./deploy.sh -m ${stages}"
+        }
+
         sh "./deploy.sh -c ${last}"
     }
 }
