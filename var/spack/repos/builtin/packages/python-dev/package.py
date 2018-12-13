@@ -50,3 +50,8 @@ class PythonDev(Package):
 
     def install(self, spec, prefix):
         open(os.path.join(prefix, 'success.txt'), 'w').close()
+
+    def setup_environment(self, spack_env, run_env):
+        deps = ['py-pip', 'py-ipython', 'py-virtualenv', 'py-wheel', 'py-cython', 'py-pyspark']
+        for dep in deps:
+            run_env.append_path('PATH', self.spec[dep].prefix.bin)
