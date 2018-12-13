@@ -476,7 +476,7 @@ copy_modules() {
     log "copying module files"
     log "...from ${source}"
     log "...into ${target}"
-
+    mkdir -p ${target}
     rsync -av "${source}/" "${target}"
 }
 
