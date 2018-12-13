@@ -37,7 +37,7 @@ def run_stages() {
     print params.STAGE
     print stages
     start = stages.find { it == params.STAGE }
-    start = stages.indexOf(params.STAGE)
+    print start
     end = stages.size - 1
     return stages[start..end]
 }
