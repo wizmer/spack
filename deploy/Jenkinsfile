@@ -38,7 +38,7 @@ def run_stages() {
     print start
     print params.STAGE
     print stages
-    end = stages.size - 1
+    end = stages.size() - 1
     return stages[start..end]
 }
 
