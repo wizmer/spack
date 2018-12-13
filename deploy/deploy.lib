@@ -68,7 +68,7 @@ install_dir_raw() {
     # variables set.
     what=$1
     date="${DEPLOYMENT_DATE:-${DEFAULT_DEPLOYMENT_DATE}}"
-    name="${DEPLOYMENT_ROOT}/${DEPLOYMENT_TYPE:-install}/${what}/${date}"
+    name="${DEPLOYMENT_ROOT}/${DEPLOYMENT_TYPE:-deploy}/${what}/${date}"
     echo "${name}"
 }
 

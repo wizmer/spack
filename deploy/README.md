@@ -295,7 +295,7 @@ This results in the following directory structure:
     ${DEPLOYMENT_ROOT}
     ├── spack
     │   └── venv
-    └── install
+    └── deploy
         ├── applications
         │   └── 2018-11-13
         │       └── data
