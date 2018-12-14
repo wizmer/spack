@@ -27,10 +27,14 @@ modules:
     verbose: True
     hash_length: 0
     whitelist:
+      - boost
+      - gmsh
+      - hdf5~mpi
+      - highfive~mpi
       - neuron
+      - 'python-dev'
       - 'python%gcc'
       - spark
-      - 'python-dev'
     blacklist:
       - '%gcc'
       - '%intel'

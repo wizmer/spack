@@ -34,7 +34,6 @@ modules:
       - py-bluepymm
       - py-bluepyopt
       - py-efel
-      #- python
       - spykfunc
       - 'synapsetool%gcc'
       - steps

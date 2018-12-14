@@ -27,11 +27,7 @@ modules:
     verbose: True
     hash_length: 0
     whitelist:
-      - boost
       - cuda
-      - gmsh
-      - hdf5~mpi
-      - highfive~mpi
     blacklist:
       - '%gcc'
       - '%intel'
