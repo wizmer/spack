@@ -79,7 +79,7 @@ packages:
       - py-ply
       - py-progress
       - py-py4j
-      - py-pyarrow
+      - py-pyarrow+parquet
       # - py-pynn
       - py-pyspark
       - py-pytest
