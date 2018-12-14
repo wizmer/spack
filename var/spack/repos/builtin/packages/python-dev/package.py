@@ -54,4 +54,4 @@ class PythonDev(Package):
     def setup_environment(self, spack_env, run_env):
         deps = ['py-pip', 'py-ipython', 'py-virtualenv', 'py-wheel', 'py-cython', 'py-pyspark']
         for dep in deps:
-            run_env.append_path('PATH', self.spec[dep].prefix.bin)
+            run_env.prepend_path('PATH', self.spec[dep].prefix.bin)
