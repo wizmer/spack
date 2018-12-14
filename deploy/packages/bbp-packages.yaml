@@ -21,7 +21,7 @@ packages:
       - compiler
       - python
     specs:
-      - spykfunc@0.11.0
+      - spykfunc@0.12.0
 
   gnu-stable-parallel:
     target_matrix:
@@ -43,7 +43,7 @@ packages:
       - mpi
       #- python
     specs:
-      - parquet-converters@0.2.1
+      - parquet-converters@0.3
 
   #### sub-cellular ####
 
