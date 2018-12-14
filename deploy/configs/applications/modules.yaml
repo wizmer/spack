@@ -29,12 +29,12 @@ modules:
     whitelist:
       - functionalizer
       - 'neurodamus%intel'
-      - 'neuron+mpi%intel'
+      #- 'neuron+mpi%intel'
       - parquet-converters
       - py-bluepymm
       - py-bluepyopt
       - py-efel
-      - python
+      #- python
       - spykfunc
       - 'synapsetool%gcc'
       - steps
