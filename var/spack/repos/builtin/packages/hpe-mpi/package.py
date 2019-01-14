@@ -24,6 +24,9 @@ class HpeMpi(Package):
         spack_env.set('MPICXX_CXX', spack_cxx)
         spack_env.set('MPIF90_F90', spack_fc)
 
+        libdir = self.prefix.lib
+        spack_env.prepend_path('LD_LIBRARY_PATH', libdir)
+
     def setup_dependent_package(self, module, dep_spec):
         bindir = self.prefix.bin
         self.spec.mpicc = join_path(bindir, 'mpicc')
