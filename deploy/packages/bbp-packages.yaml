@@ -39,6 +39,7 @@ packages:
   gnu-stable-parallel-python:
     target_matrix:
       - gnu-stable
+      - gnu-next
     requires:
       - architecture
       - compiler

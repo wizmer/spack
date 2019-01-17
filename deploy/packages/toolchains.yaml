@@ -84,3 +84,16 @@ llvm-stable:
   - openblas@0.3.3
   python:
   - python@2.7.15
+
+# Next gen toolchain
+gnu-next:
+  architecture:
+  - x86_64
+  compiler:
+  - gcc@8.2.0
+  mpi:
+  - hpe-mpi@2.16
+  lapack:
+  - intel-mkl@2018.1.163
+  python:
+  - python@3.6.5

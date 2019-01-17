@@ -15,6 +15,7 @@ packages:
     target_matrix:
       - gnu-stable
       - gnu-stable-py2
+      - gnu-next
     requires:
       - architecture
       - compiler
@@ -115,6 +116,7 @@ packages:
     target_matrix:
       - gnu-stable
       - gnu-stable-py2
+      - gnu-next
     requires:
       - architecture
       - compiler

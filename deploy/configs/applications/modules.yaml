@@ -54,6 +54,7 @@ modules:
         '^python@3:': '/python3'
         '^coreneuron+knl': knl
         '+mpi': '/parallel'
+        '%gcc@8.1.0:8.99.99': '/gcc8'
       environment:
         set:
           '${PACKAGE}_ROOT': '${PREFIX}'

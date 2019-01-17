@@ -36,6 +36,7 @@ packages:
   gnu-intel-stable-serial:
     target_matrix:
       - gnu-stable
+      - gnu-next
       - intel-stable
     requires:
       - architecture
