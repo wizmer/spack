@@ -35,6 +35,7 @@ modules:
       - ior
       - imb
       - intel-mpi
+      - julia
       - likwid
       - lmod
       - mvapich2
