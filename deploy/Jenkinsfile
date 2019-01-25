@@ -81,6 +81,7 @@ pipeline {
         DEPLOYMENT_UPSTREAM = deployment_directory(true)
         DEPLOYMENT_ROOT = deployment_directory(false)
         BASEDIR = "${DEPLOYMENT_ROOT}/spack/deploy"
+        DOCKERDIR = "${DEPLOYMENT_ROOT}/spack/docker"
     }
 
     triggers {
@@ -291,6 +292,14 @@ pipeline {
                 stage('Documentation') {
                     steps {
                         sh "ls"
+                    }
+                }
+
+                stage('Docker') {
+                    steps {
+                        dir("${DOCKERDIR}") {
+                            sh "docker build --build-arg revision=${sha1} -t bluebrain/spack ."
+                        }
                     }
                 }
 
