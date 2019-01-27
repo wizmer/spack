@@ -17,6 +17,11 @@ class NeurodamusNeocortex(NeurodamusModel):
 
     variant('v5', default=True, description='Enable support for previous v5 circuits')
 
+    # v5 mods are not compatible with coreneuron
+    conflicts('+v5', when="+coreneuron")
+
+    mech_name = "neocortex"
+
     @run_before('merge_hoc_mod')
     def include_v5(self):
         if self.spec.satisfies('+v5'):

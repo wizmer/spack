@@ -55,9 +55,6 @@ class Coreneuron(CMakePackage):
     depends_on('cmake@3:', type='build')
     depends_on('cuda', when='+gpu')
     depends_on('mpi', when='+mpi')
-    depends_on('neurodamus-base@plasticity', when='@plasticity')
-    depends_on('neurodamus-base@hippocampus', when='@hippocampus')
-    depends_on('neurodamus-base@master', when='@master')
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')
@@ -114,7 +111,8 @@ class Coreneuron(CMakePackage):
                    '-DENABLE_MPI=%s' % ('ON' if '+mpi' in spec else 'OFF'),
                    '-DCORENEURON_OPENMP=%s' % ('ON' if '+openmp' in spec else 'OFF'),
                    '-DUNIT_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF'),
-                   '-DFUNCTIONAL_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF')
+                   '-DFUNCTIONAL_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF'),
+                   '-DENABLE_DEV_FILES_INSTALLATION=ON'  # for compiling mods to corenrn-special
                    ]
 
         if spec.satisfies('~shared') or spec.satisfies('+gpu'):
@@ -133,12 +131,6 @@ class Coreneuron(CMakePackage):
             # PGI compiler not able to compile nrnreport.cpp when enabled
             # OpenMP, OpenACC and Reporting. Disable ReportingLib for GPU
             options.append('-DENABLE_REPORTINGLIB=OFF')
-
-        if '^neurodamus-base' in spec:
-            modlib_dir = self.spec['neurodamus-base'].prefix.lib.modlib
-            modfile_list = '%s/coreneuron_modlist.txt' % modlib_dir
-            options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
-            options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
 
         return options
 

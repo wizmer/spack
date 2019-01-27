@@ -24,7 +24,6 @@ class NeurodamusModel(Package):
     depends_on("neuron+mpi")
     depends_on('reportinglib')
     depends_on('coreneuron', when='+coreneuron')
-    depends_on('coreneuron@plasticity', when='@plasicity')
     depends_on('synapsetool+mpi', when='+synapsetool~sonata')
     depends_on('synapsetool+mpi+sonata', when='+synapsetool+sonata')
 
@@ -33,8 +32,8 @@ class NeurodamusModel(Package):
     # specificed as external and, if static, and we must bring their dependencies.
     depends_on('zlib')  # for hdf5
 
-    depends_on('coreneuron+profile', when='+profile')
     depends_on('neuron+profile', when='+profile')
+    depends_on('coreneuron+profile', when='+coreneuron+profile')
     depends_on('reportinglib+profile', when='+profile')
     depends_on('tau', when='+profile')
 
@@ -50,6 +49,9 @@ class NeurodamusModel(Package):
     _hoc_srcs = ('common/hoc', 'hoc')
     _mod_srcs = ('common/mod', 'mod')
 
+    # The name of the mechanism, which cen be overriden
+    mech_name = ""
+
     @staticmethod
     def copy_all(src, dst, copyfunc=shutil.copy):
         isdir = os.path.isdir
@@ -58,9 +60,15 @@ class NeurodamusModel(Package):
             isdir(pth) or copyfunc(pth, dst)
 
     def merge_hoc_mod(self, spec, prefix):
+        core_prefix = spec['neurodamus-core'].prefix
         # First Initialize with core hoc / mods
-        copy_tree(spec['neurodamus-core'].prefix.hoc, '_merged_hoc')
-        copy_tree(spec['neurodamus-core'].prefix.mod, '_merged_mod')
+        copy_tree(core_prefix.hoc, '_merged_hoc')
+        copy_tree(core_prefix.mod, '_merged_mod')
+        if spec.satisfies("+coreneuron"):
+            mkdirp('core_mechs')
+            with open(core_prefix.mod.join("coreneuron_modlist.txt")) as core_mods:
+                for aux_mod in core_mods:
+                    shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'core_mechs')
 
         if spec.satisfies('+plasticity'):
             self.copy_all('common/mod/optimized', 'common/mod')
@@ -70,6 +78,8 @@ class NeurodamusModel(Package):
             self.copy_all(hoc_src, '_merged_hoc')
         for mod_src in self._mod_srcs:
             self.copy_all(mod_src, '_merged_mod')
+            if spec.satisfies("+coreneuron"):
+                self.copy_all(mod_src, 'core_mechs')
 
     def build(self, spec, prefix):
         """ Build mod files from m dir with nrnivmodl
@@ -80,31 +90,53 @@ class NeurodamusModel(Package):
         profile_flag = '-DENABLE_TAU_PROFILER' if '+profile' in spec else ''
 
         # Allow deps to not recurs bring their deps
-        link_flag = '-Wl,--as-needed' if sys.platform != 'darwin' else ''
+        link_flag = ''
         include_flag = ' -I%s -I%s %s' % (spec['reportinglib'].prefix.include,
                                           spec['hdf5'].prefix.include,
                                           profile_flag)
         if '+synapsetool' in spec:
             include_flag += ' -DENABLE_SYNTOOL -I ' + spec['synapsetool'].prefix.include
             dep_libs.append('synapsetool')
-        if '+coreneuron' in spec:
-            include_flag += ' -DENABLE_CORENEURON -I%s' % (spec['coreneuron'].prefix.include)
-            dep_libs.append('coreneuron')
 
-        # link_flag. If shared use -rpath, -L, -l, otherwise lib path
         for dep in dep_libs:
-            if spec[dep].satisfies('+shared'):
-                link_flag += " %s %s" % (spec[dep].libs.rpath_flags, spec[dep].libs.ld_flags)
-            else:
-                link_flag += " " + spec[dep].libs.joined()
+            link_flag += ' ' + self._get_lib_flags(spec, dep)
+
+        # If synapsetool is static we have to bring dependencies
         if spec.satisfies('+synapsetool') and spec.satisfies('^synapsetool~shared'):
             link_flag += ' ' + spec['synapsetool'].package.dependency_libs(spec).joined()
+
+        # Create corenrn mods
+        if '+coreneuron' in spec:
+            include_flag += ' -DENABLE_CORENEURON -I%s' % (spec['coreneuron'].prefix.include)
+            corenrnmodl = which('corenrnmodl')
+            corenrnmodl('--incflags', include_flag, '--linkflags', link_flag,
+                        '--name', self.mech_name, '-v', str(spec.version), 'core_mechs')
+            output_dir = spec.architecture.target + "-core"
+            assert os.path.isdir(output_dir)
+
+            shutil.move(output_dir, prefix)  # Install now to get final rpath
+            mechlib = find_libraries("libcorenrnmech*", join_path(prefix, output_dir))
+            assert mechlib, "Error creating corenrnmech lib"
+
+            #Link neuron special with this mechs lib
+            link_flag += ' %s %s' % (mechlib.rpath_flags, mechlib.ld_flags)
+            link_flag += ' ' + self._get_lib_flags(spec, 'coreneuron')
 
         nrnivmodl = which('nrnivmodl')
         with profiling_wrapper_on():
             nrnivmodl('-incflags', include_flag, '-loadflags', link_flag, 'm')
         special = os.path.join(os.path.basename(self.neuron_archdir), 'special')
         assert os.path.isfile(special)
+
+    @staticmethod
+    def _get_lib_flags(spec, lib_pckg):
+        if spec[lib_pckg].satisfies('+shared'):
+            # For shared libs we define rpath and ld_flags
+            return "%s %s" % (spec[lib_pckg].libs.rpath_flags,
+                              spec[lib_pckg].libs.ld_flags)
+        else:
+            # Otherwise full path is ok. (What about sub-dependencies?)
+            return spec[lib_pckg].libs.joined()
 
     def install(self, spec, prefix):
         """ Move hoc, mod and libnrnmech.so to lib, generated mod.c's into lib/modc.
