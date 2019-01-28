@@ -90,7 +90,7 @@ class NeurodamusModel(Package):
         profile_flag = '-DENABLE_TAU_PROFILER' if '+profile' in spec else ''
 
         # Allow deps to not recurs bring their deps
-        link_flag = ''
+        link_flag = '-Wl,-rpath,' + prefix.lib
         include_flag = ' -I%s -I%s %s' % (spec['reportinglib'].prefix.include,
                                           spec['hdf5'].prefix.include,
                                           profile_flag)
@@ -109,18 +109,15 @@ class NeurodamusModel(Package):
         if '+coreneuron' in spec:
             include_flag += ' -DENABLE_CORENEURON -I%s' % (spec['coreneuron'].prefix.include)
             corenrnmodl = which('corenrnmodl')
-            corenrnmodl('--incflags', include_flag, '--linkflags', link_flag,
-                        '--name', self.mech_name, '-v', str(spec.version), 'core_mechs')
-            output_dir = spec.architecture.target + "-core"
-            assert os.path.isdir(output_dir)
-
-            shutil.move(output_dir, prefix)  # Install now to get final rpath
-            mechlib = find_libraries("libcorenrnmech*", join_path(prefix, output_dir))
-            assert mechlib, "Error creating corenrnmech lib"
+            corenrnmodl('-i', include_flag, '-l', link_flag, '-n', self.mech_name,
+                        '-v', str(spec.version), 'core_mechs')
+            output_dir = spec.architecture.target + "_core"
+            mechlib = find_libraries("libcorenrnmech*", output_dir)
+            assert len(mechlib), "Error creating corenrnmech lib"
 
             #Link neuron special with this mechs lib
-            link_flag += ' %s %s' % (mechlib.rpath_flags, mechlib.ld_flags)
-            link_flag += ' ' + self._get_lib_flags(spec, 'coreneuron')
+            link_flag += ' ' + mechlib.ld_flags + \
+                         ' ' + self._get_lib_flags(spec, 'coreneuron')
 
         nrnivmodl = which('nrnivmodl')
         with profiling_wrapper_on():
@@ -141,20 +138,21 @@ class NeurodamusModel(Package):
     def install(self, spec, prefix):
         """ Move hoc, mod and libnrnmech.so to lib, generated mod.c's into lib/modc.
             Find and move "special" to bin.
-            If neurodamus-core comes with python, create links to it.
+            If +coreneuron, install the shared lib to lib/ and corenrn-special to bin.
+            If neurodamus-core comes with python, create links under python.
         """
+        mkdirp(prefix.bin)
         mkdirp(prefix.lib)
+        mkdirp(prefix.share.modc)
         shutil.move('_merged_hoc', prefix.lib.hoc)
         shutil.move('_merged_mod', prefix.lib.mod)
-        os.makedirs(prefix.lib.modc)
-        os.makedirs(prefix.bin)
 
         arch = os.path.basename(self.neuron_archdir)
         shutil.move(join_path(arch, 'special'), prefix.bin)
 
         # Copy c mods
         for cmod in find(arch, "*.c", recursive=False):
-            shutil.move(cmod, prefix.lib.modc)
+            shutil.move(cmod, prefix.share.modc)
 
         # Handle non-binary special
         if os.path.exists(arch + "/.libs/libnrnmech.so"):
@@ -163,13 +161,22 @@ class NeurodamusModel(Package):
             sed('-i', 's#-dll .*#-dll %s#' % prefix.lib.join('libnrnmech.so'),
                 prefix.bin.special)
 
+        # TODO: Corenrn
+        if spec.satisfies('+coreneuron'):
+            shutil.move("modc_core", prefix.share)
+            outdir = spec.architecture.target + '_core'
+            shutil.move(join_path(outdir, 'corenrn-special'), prefix.bin)
+            for libname in find_libraries("libcorenrnmech*", outdir):
+                shutil.move(libname, prefix.lib)
+
         # PY: Link only important stuff, and create a new lib link (to our lib)
         py_src = spec['neurodamus-core'].prefix.python
         if os.path.isdir(py_src):
-            os.makedirs(prefix.python)
-            force_symlink('../lib', prefix.python.lib)
+            pydir = prefix.lib.python
+            mkdirp(py_dst)
+            force_symlink('../lib', py_dst.lib)
             for name in ('neurodamus', 'init.py', '_debug.py'):
-                os.symlink(py_src.join(name), prefix.python.join(name))
+                os.symlink(py_src.join(name), py_dst.join(name))
 
     def setup_environment(self, spack_env, run_env):
         run_env.prepend_path('PATH', self.prefix.bin)

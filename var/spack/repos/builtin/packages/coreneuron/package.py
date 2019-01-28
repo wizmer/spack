@@ -37,9 +37,6 @@ class Coreneuron(CMakePackage):
     url      = "https://github.com/BlueBrain/CoreNeuron"
 
     version('develop', git=url, submodules=True)
-    version('hippocampus', git=url, submodules=True)
-    version('master', git=url, submodules=True)
-    version('plasticity', git=url, preferred=True, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
