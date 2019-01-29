@@ -109,7 +109,7 @@ class Coreneuron(CMakePackage):
                    '-DCORENEURON_OPENMP=%s' % ('ON' if '+openmp' in spec else 'OFF'),
                    '-DUNIT_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF'),
                    '-DFUNCTIONAL_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF'),
-                   '-DENABLE_DEV_FILES_INSTALLATION=ON'  # for compiling mods to corenrn-special
+                   '-DENABLE_HEADER_INSTALL=ON'  # for compiling mods to corenrn-special
                    ]
 
         if spec.satisfies('~shared') or spec.satisfies('+gpu'):
