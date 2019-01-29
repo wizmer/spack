@@ -52,18 +52,13 @@ class NeurodamusModel(Package):
     # The name of the mechanism, which cen be overriden
     mech_name = ""
 
-    @staticmethod
-    def copy_all(src, dst, copyfunc=shutil.copy):
-        isdir = os.path.isdir
-        for name in os.listdir(src):
-            pth = join_path(src, name)
-            isdir(pth) or copyfunc(pth, dst)
-
     def merge_hoc_mod(self, spec, prefix):
         core_prefix = spec['neurodamus-core'].prefix
         # First Initialize with core hoc / mods
         copy_tree(core_prefix.hoc, '_merged_hoc')
         copy_tree(core_prefix.mod, '_merged_mod')
+
+        # If we shall build mods for coreneuron, only bring from core those specified
         if spec.satisfies("+coreneuron"):
             mkdirp('core_mechs')
             with open(core_prefix.mod.join("coreneuron_modlist.txt")) as core_mods:
@@ -71,15 +66,15 @@ class NeurodamusModel(Package):
                     shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'core_mechs')
 
         if spec.satisfies('+plasticity'):
-            self.copy_all('common/mod/optimized', 'common/mod')
+            copy_all('common/mod/optimized', 'common/mod')
 
         # Copy from the several sources
         for hoc_src in self._hoc_srcs:
-            self.copy_all(hoc_src, '_merged_hoc')
+            copy_all(hoc_src, '_merged_hoc')
         for mod_src in self._mod_srcs:
-            self.copy_all(mod_src, '_merged_mod')
+            copy_all(mod_src, '_merged_mod')
             if spec.satisfies("+coreneuron"):
-                self.copy_all(mod_src, 'core_mechs')
+                copy_all(mod_src, 'core_mechs')
 
     def build(self, spec, prefix):
         """ Build mod files from m dir with nrnivmodl
@@ -194,3 +189,37 @@ def profiling_wrapper_on():
     os.environ["USE_PROFILER_WRAPPER"] = "1"
     yield
     del os.environ["USE_PROFILER_WRAPPER"]
+
+
+# Aux funcs
+# ---------
+def copy_all(src, dst, copyfunc=shutil.copy):
+    """Copies/processes all files in a src dir against a destination dir"""
+    print("Copying " + src + " to " + dst)
+    isdir = os.path.isdir
+    for name in os.listdir(src):
+        print(" > file " + name)
+        pth = join_path(src, name)
+        isdir(pth) or copyfunc(pth, dst)
+
+
+def symlink2(src, dst):
+    """Simple alternative to symlink, copy compat"""
+    if os.path.isdir(dst):
+        dst_dir = dst
+        dst = join_path(dst, os.path.basename(src))
+    else:
+        dst_dir = os.path.dirname(dst)
+    src = os.path.relpath(src, dst_dir) # update path relation
+    os.symlink(src, dst)
+
+
+def filter_out(src, dst):
+    """Remove src from dst, copy compat"""
+    try:
+        os.remove(join_path(dst, os.path.basename(src)))
+    except: pass
+
+# Shortcut to extra operators
+copy_all.symlink2 = symlink2
+copy_all.filter_out = filter_out

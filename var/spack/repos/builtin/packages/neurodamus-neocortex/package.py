@@ -1,8 +1,7 @@
 # Copyright 2013-2018 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 from spack import *
-from spack.pkg.builtin.neurodamus_model import NeurodamusModel
-import shutil
+from spack.pkg.builtin.neurodamus_model import NeurodamusModel, copy_all
 
 
 class NeurodamusNeocortex(NeurodamusModel):
@@ -17,13 +16,16 @@ class NeurodamusNeocortex(NeurodamusModel):
 
     variant('v5', default=True, description='Enable support for previous v5 circuits')
 
-    # v5 mods are not compatible with coreneuron
-    conflicts('+v5', when="+coreneuron")
-
     mech_name = "neocortex"
 
     @run_before('merge_hoc_mod')
     def include_v5(self):
         if self.spec.satisfies('+v5'):
-            self.copy_all('mod/v5', 'mod', copyfunc=shutil.move)
+            copy_all('mod/v5', 'mod', copyfunc=copy_all.symlink2)
+
+    @run_after('merge_hoc_mod')
+    def patch_coremechs(self):
+        """v5 mods are incompatible with coreneuron. So drop them"""
+        if self.spec.satisfies('+v5'):
+            copy_all('mod/v5', 'core_mechs', copyfunc=copy_all.filter_out)
 
