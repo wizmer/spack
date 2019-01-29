@@ -195,10 +195,8 @@ def profiling_wrapper_on():
 # ---------
 def copy_all(src, dst, copyfunc=shutil.copy):
     """Copies/processes all files in a src dir against a destination dir"""
-    print("Copying " + src + " to " + dst)
     isdir = os.path.isdir
     for name in os.listdir(src):
-        print(" > file " + name)
         pth = join_path(src, name)
         isdir(pth) or copyfunc(pth, dst)
 
