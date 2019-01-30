@@ -23,9 +23,3 @@ class NeurodamusNeocortex(NeurodamusModel):
         if self.spec.satisfies('+v5'):
             copy_all('mod/v5', 'mod', copyfunc=copy_all.symlink2)
 
-    @run_after('merge_hoc_mod')
-    def patch_coremechs(self):
-        """v5 mods are incompatible with coreneuron. So drop them"""
-        if self.spec.satisfies('+v5'):
-            copy_all('mod/v5', 'core_mechs', copyfunc=copy_all.filter_out)
-
