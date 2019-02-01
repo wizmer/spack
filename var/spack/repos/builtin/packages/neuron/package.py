@@ -26,7 +26,6 @@ class Neuron(Package):
     version('2018-10', commit='b3097b7', preferred=True)
     version('2018-09', commit='9f36b13')
     version('7.6.2',   tag='7.6.2')
-    # versions from url, with checksum
     version('7.5', 'fb72c841374dfacbb6c2168ff57bfae9')
     version('7.4', '2c0bbee8a9e55d60fa26336f4ab7acbf')
     version('7.3', '993e539cb8bf102ca52e9fefd644ab61')
@@ -36,6 +35,7 @@ class Neuron(Package):
     variant('coreneuron',    default=True,  description="Patch hh.mod for CoreNEURON compatibility")
     variant('cross-compile', default=False, description='Build for cross-compile environment')
     variant('debug',         default=False, description='Build debug with O0')
+    variant('interviews',    default=False, description="Build with Interviews for GUI")
     variant('mpi',           default=True,  description='Enable MPI parallelism')
     variant('multisend',     default=True,  description="Enable multi-send spike exchange")
     variant('profile',       default=False, description="Enable Tau profiling")
@@ -52,6 +52,7 @@ class Neuron(Package):
     depends_on('pkgconfig',  type='build')
 
     depends_on('readline')
+    depends_on('interviews',  when='+interviews')
     depends_on('mpi',         when='+mpi')
     depends_on('ncurses',     when='~cross-compile')
     depends_on('python@2.6:', when='+python', type=('build', 'link', 'run'))
@@ -61,8 +62,6 @@ class Neuron(Package):
     conflicts('+pysetup', when='~python')
     conflicts('+rx3d',    when='~pysetup')
 
-    _default_options = ['--without-iv',
-                        '--without-x']
     _specs_to_options = {
         '+cross-compile': ['cross_compiling=yes',
                            '--without-memacs',
@@ -195,10 +194,15 @@ class Neuron(Package):
         make('install')
 
     def install(self, spec, prefix):
-        options = ['--prefix=%s' % prefix] + self._default_options
+        options = ['--prefix=%s' % prefix]
         for specname, spec_opts in self._specs_to_options.items():
             if spec.satisfies(specname):
                 options.extend(spec_opts)
+
+        if '+interviews' in spec:
+            options.append('--with-iv=%s' % spec['interviews'].prefix)
+        else:
+            options.extend(['--without-iv', '--without-x'])
 
         options.extend(self.get_arch_options(spec))
         options.extend(self.get_python_options(spec))
