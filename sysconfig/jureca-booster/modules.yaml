@@ -34,6 +34,8 @@ modules:
       - 'neurodamus'
       - 'neuron'
       - 'py-bluepyopt'
+      - 'python'
+      - 'py-matplotlib'
     blacklist:
       - '%gcc'
       - '%intel'
