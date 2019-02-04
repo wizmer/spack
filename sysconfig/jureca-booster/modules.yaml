@@ -36,6 +36,7 @@ modules:
       - 'py-bluepyopt'
       - 'python'
       - 'py-matplotlib'
+      - 'py-ipyparallel'
     blacklist:
       - '%gcc'
       - '%intel'
