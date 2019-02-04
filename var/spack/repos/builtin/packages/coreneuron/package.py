@@ -39,6 +39,7 @@ class Coreneuron(CMakePackage):
     version('develop', git=url, submodules=True)
     version('hippocampus', git=url, submodules=True)
     version('master', git=url, submodules=True)
+    version('mousify', git=url, submodules=True)
     version('plasticity', git=url, preferred=True, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
@@ -58,6 +59,7 @@ class Coreneuron(CMakePackage):
     depends_on('neurodamus-base@plasticity', when='@plasticity')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
     depends_on('neurodamus-base@master', when='@master')
+    depends_on('neurodamus-base@mousify', when='@mousify')
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')

@@ -16,21 +16,21 @@ class Libsonata(CMakePackage):
     homepage = "https://bbpcode.epfl.ch/code/#/admin/projects/common/libsonata"
     url      = "ssh://bbpcode.epfl.ch/common/libsonata"
 
-    version('develop', git=url, submodules=False)
+    version('develop', git=url, submodules=True)
 
     variant('mpi', default=False, description="Enable MPI backend")
     variant('python', default=False, description="Enable Python bindings")
 
     depends_on('cmake@3.0:', type='build')
-    depends_on('fmt@4.0:')
+    #depends_on('fmt@4.0:')
     depends_on('highfive+mpi', when='+mpi')
     depends_on('highfive~mpi', when='~mpi')
     depends_on('mpi', when='+mpi')
-    depends_on('py-pybind11@2.0:', type='build', when='+python')
+    #depends_on('py-pybind11@2.0:', type='build', when='+python')
 
     def cmake_args(self):
         result = [
-            '-DEXTLIB_FROM_SUBMODULES=OFF',
+            '-DEXTLIB_FROM_SUBMODULES=ON',
         ]
         if self.spec.satisfies('+python'):
             result.extend([
