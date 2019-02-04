@@ -36,6 +36,7 @@ class NeurodamusBase(Package):
     version('master',      git=url, branch='master')
     version('hippocampus', git=url, branch='sandbox/king/hippocampus')
     version('plasticity',  git=url, branch='sandbox/king/saveupdate_v6support_mask', preferred=True)
+    version('mousify',     git=url, branch='sandbox/leite/mousify')
 
     def install(self, spec, prefix):
         shutil.copytree('lib', prefix.lib)
