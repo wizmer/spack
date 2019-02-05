@@ -296,9 +296,20 @@ pipeline {
                 }
 
                 stage('Docker') {
-                    steps {
-                        dir("${DOCKERDIR}") {
-                            sh "docker build --build-arg revision=${sha1} -t bluebrain/spack ."
+                    agent('docker')
+
+                    stages {
+                        stage('Build') {
+                            steps {
+                                dir("${DOCKERDIR}") {
+                                    sh "docker build --build-arg revision=${sha1} -t bluebrain/spack ."
+                                }
+                            }
+                        }
+                        stage('Upload') {
+                            steps {
+                                sh "ls"
+                            }
                         }
                     }
                 }
