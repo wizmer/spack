@@ -301,7 +301,7 @@ pipeline {
                     }
 
                     steps {
-                        dir("${DOCKERDIR}") {
+                        dir("docker") {
                             sh "docker build --build-arg revision=${sha1} -t bluebrain/spack ."
                         }
                     }
