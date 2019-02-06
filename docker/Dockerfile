@@ -70,7 +70,7 @@ ARG pr
 ARG revision=develop
 
 RUN if [[ "x$pr" != "x" ]]; then \
-            git fetch origin +refs/pull/$pr/*:refs/remotes/origin/pull/$pr; \
+            git fetch origin +refs/pull/$pr/merge:refs/remotes/origin/pull/$pr; \
     else \
             git fetch; \
     fi
