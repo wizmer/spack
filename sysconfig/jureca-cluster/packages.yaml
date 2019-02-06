@@ -60,6 +60,8 @@ packages:
             ncurses@6.0: /usr/local/software/jureca/Stages/2018a/software/ncurses/6.0-GCCcore-5.5.0
         version: [6.0]
         buildable: False
+    neuron:
+        variants: ~binary
     openssl:
         paths:
             openssl@system: /usr
