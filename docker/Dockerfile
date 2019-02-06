@@ -71,7 +71,7 @@ WORKDIR "/spack"
 RUN git fetch
 
 ARG pr
-RUN [[ "x$pr" != "x" ]] && git fetch +refs/pull/$pr/head:refs/remotes/origin/pull/$pr
+RUN [[ "x$pr" != "x" ]] && git fetch origin +refs/pull/$pr/head:refs/remotes/origin/pull/$pr
 
 ARG revision=develop
 RUN git checkout $revision
