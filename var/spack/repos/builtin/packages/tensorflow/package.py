@@ -8,6 +8,7 @@ class Tensorflow(Package):
     homepage = "https://www.tensorflow.org"
     url      = "https://github.com/tensorflow/tensorflow/archive/v0.10.0.tar.gz"
 
+    version('1.12.0',    '48164180a2573e75f1c8dff492a550a0')
     version('1.9.0',     '3426192cce0f8e070b2010e5bd5695cd')
     version('1.8.0',     'cd45874be9296644471dd43e7da3fbd0')
     version('1.6.0',     '6dc60ac37e49427cd7069968da42c1ac')
@@ -18,34 +19,39 @@ class Tensorflow(Package):
     version('1.0.0-rc2', 'a058a7e0ba2b9761cf2420c82d520049')
     version('0.10.0',    'b75cbd494d61a809af5ef25d7fba561b')
 
-    depends_on('swig',                 type='build')
+    depends_on('swig',                          type='build')
 
     # old tensorflow needs old bazel
-    depends_on('bazel@0.10.0',         type='build',          when='@1.8.0:1.9.0')
-    depends_on('bazel@0.9.0',          type='build',          when='@1.5.0:1.6.0')
-    depends_on('bazel@0.4.5',          type='build',          when='@1.2.0:1.3.0')
-    depends_on('bazel@0.4.4:0.4.999',  type='build',          when='@1.0.0:1.1.0')
-    depends_on('bazel@0.3.1:0.4.999',  type='build',          when='@:1.0.0')
+    depends_on('bazel@0.15.0',                  type='build',          when='@1.12.0:')
+    depends_on('bazel@0.10.0',                  type='build',          when='@1.8.0:1.9.0')
+    depends_on('bazel@0.9.0',                   type='build',          when='@1.5.0:1.6.0')
+    depends_on('bazel@0.4.5',                   type='build',          when='@1.2.0:1.3.0')
+    depends_on('bazel@0.4.4:0.4.999',           type='build',          when='@1.0.0:1.1.0')
+    depends_on('bazel@0.3.1:0.4.999',           type='build',          when='@:1.0.0')
 
     extends('python')
-    depends_on('py-setuptools',        type=('build', 'run'))
-    depends_on('py-numpy@1.11.0:',     type=('build', 'run'))
-    depends_on('py-six@1.10.0:',       type=('build', 'run'))
+    depends_on('py-setuptools',                 type=('build', 'run'))
+    depends_on('py-numpy@1.11.0:',              type=('build', 'run'))
+    depends_on('py-six@1.10.0:',                type=('build', 'run'))
 
-    depends_on('py-protobuf@3.6.0',    type=('build', 'run'), when='@1.8.0:')
-    depends_on('py-protobuf@3.3.0:',   type=('build', 'run'), when='@1.3.0:1.6.0')
-    depends_on('py-protobuf@3.0.0b2',  type=('build', 'run'), when='@:1.2.0')
+    depends_on('py-protobuf@3.6.1',             type=('build', 'run'), when='@1.8.0:')
+    depends_on('py-protobuf@3.3.0:',            type=('build', 'run'), when='@1.3.0:1.6.0')
+    depends_on('py-protobuf@3.0.0b2',           type=('build', 'run'), when='@:1.2.0')
 
-    depends_on('py-wheel',             type=('build', 'run'))
-    depends_on('py-mock@2.0.0:',       type=('build', 'run'))
+    depends_on('py-wheel',                      type=('build', 'run'))
+    depends_on('py-mock@2.0.0:',                type=('build', 'run'))
 
-    depends_on('py-enum34@1.1.6:',     type=('build', 'run'), when='@1.5.0:')
-    depends_on('py-absl-py@0.1.6',     type=('build', 'run'), when='@1.5.0:')
+    depends_on('py-enum34@1.1.6:',              type=('build', 'run'), when='@1.5.0:^python@:3.1')
+    depends_on('py-absl-py@0.1.6',              type=('build', 'run'), when='@1.5.0:')
 
-    depends_on('py-astor@0.1.6:',      type=('build', 'run'), when='@1.6.0:')
-    depends_on('py-gast@0.2.0:',       type=('build', 'run'), when='@1.6.0:')
-    depends_on('py-grpcio@1.8.6:',     type=('build', 'run'), when='@1.6.0:')
-    depends_on('py-termcolor@1.1.0:',  type=('build', 'run'), when='@1.6.0:')
+    depends_on('py-astor@0.1.6:',               type=('build', 'run'), when='@1.6.0:')
+    depends_on('py-gast@0.2.0:',                type=('build', 'run'), when='@1.6.0:')
+    depends_on('py-grpcio@1.8.6:',              type=('build', 'run'), when='@1.6.0:')
+    depends_on('py-termcolor@1.1.0:',           type=('build', 'run'), when='@1.6.0:')
+
+    depends_on('py-keras-applications@1.0.6:',  type=('build', 'run'), when='@1.12.0:')
+    depends_on('py-keras-preprocessing@1.0.5:', type=('build', 'run'), when='@1.12.0:')
+    depends_on('py-h5py',                       type=('build', 'run'), when='@1.12.0:')
 
     patch('url-zlib.patch',  when='@0.10.0')
     patch('crosstool.patch', when='@1.0.0-rc2') # auch auf 0.10.0 wenn mit cuda!
@@ -119,6 +125,14 @@ class Tensorflow(Package):
             env['TF_DOWNLOAD_CLANG'] = '0'
             env['TF_NEED_AWS'] = '0'
 
+        # boringssl error again, build against openssl instead via TF_SYSTEM_LIBS
+        # does not work for tf < 1.12.0
+        # (https://github.com/tensorflow/tensorflow/issues/25283#issuecomment-460124556)
+        if self.spec.satisfies('@1.12.0:'):
+            env['TF_SYSTEM_LIBS'] = "boringssl"
+            env['TF_NEED_IGNITE'] = '0'
+            env['TF_NEED_ROCM'] = '0'
+
         # set tmpdir to a non-NFS filesystem (because bazel uses ~/.cache/bazel)
         # TODO: This should be checked for non-nfsy filesystem, but the current
         #       best idea for it is to check
@@ -162,12 +176,18 @@ class Tensorflow(Package):
                         r"#'tensorboard >=",
                         'tensorflow/tools/pip_package/setup.py')
         if self.spec.satisfies('@1.8.0:'):
-        	# 1.8.0 and 1.9.0 aborts with numpy import error during python_api generation
+            # 1.8.0 and 1.9.0 aborts with numpy import error during python_api generation
             # somehow the wrong PYTHONPATH is used...set --distinct_host_configuration=false as a workaround
             # (https://github.com/tensorflow/tensorflow/issues/22395#issuecomment-431229451)
-            filter_file('--define with_gcp_support=false',
-                        '--define with_gcp_support=false\nbuild --distinct_host_configuration=false\nbuild --action_env PYTHONPATH="'+env['PYTHONPATH']+'"',
-                        '.tf_configure.bazelrc')
+            filter_file('build --action_env TF_NEED_OPENCL_SYCL="0"',
+                        'build --action_env TF_NEED_OPENCL_SYCL="0"\n'
+                        'build --distinct_host_configuration=false\n'
+                        'build --action_env PYTHONPATH="{}"'.format(env['PYTHONPATH']),
+                        '.tf_configure.bazelrc')        
+        if self.spec.satisfies('@1.12.0:'):
+            # add link to spack-installed openssl libs (needed if no system openssl available)
+            filter_file('-lssl', '-lssl '+self.spec['openssl'].libs.search_flags, 'third_party/systemlibs/boringssl.BUILD')
+            filter_file('-lcrypto', '-lcrypto '+self.spec['openssl'].libs.search_flags, 'third_party/systemlibs/boringssl.BUILD')
 
         if '+cuda' in spec:
             bazel('-c', 'opt', '--config=cuda', '//tensorflow/tools/pip_package:build_pip_package')
