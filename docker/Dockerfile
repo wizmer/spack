@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 ARG proxy
 ENV http_proxy=$proxy
+ENV https_proxy=$proxy
 
 # default software required
 RUN apt-get update
@@ -44,7 +45,6 @@ RUN apt-get -y \
                 python-minimal \
                 python-numpy \
                 software-properties-common \
-                sudo \
                 tcl-dev \
                 unzip \
                 vim \
@@ -55,7 +55,7 @@ ENV SPACK_ROOT $PWD/spack
 ENV PATH $SPACK_ROOT/bin:$PATH
 
 # see this: http://stackoverflow.com/questions/20635472/using-the-run-instruction-in-a-dockerfile-with-source-does-not-work
-RUN sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 RUN . $SPACK_ROOT/share/spack/setup-env.sh
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" \
     > /etc/profile.d/spack.sh
