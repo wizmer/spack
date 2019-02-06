@@ -67,8 +67,6 @@ ADD packages.yaml $SPACK_ROOT/etc/spack
 ADD modules.yaml $SPACK_ROOT/etc/spack
 ADD config.yaml $SPACK_ROOT/etc/spack
 
-RUN ssh-keyscan github.com >> /etc/ssh/known_hosts
-
 WORKDIR "/spack"
 RUN git fetch
 
