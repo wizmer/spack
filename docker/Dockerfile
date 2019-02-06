@@ -5,7 +5,7 @@ MAINTAINER Matthias Wolf <matthias.wolf@epfl.ch>
 ENV DEBIAN_FRONTEND noninteractive
 
 ARG proxy
-ENV HTTP_PROXY=$proxy
+ENV http_proxy=$proxy
 
 # default software required
 RUN apt-get update
