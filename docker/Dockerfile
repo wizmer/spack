@@ -69,9 +69,12 @@ WORKDIR "/spack"
 ARG pr
 ARG revision=develop
 
+ENV REVISION=revision
+
 RUN if [[ "x$pr" != "x" ]]; then \
-            git fetch origin +refs/pull/$pr/merge:refs/remotes/origin/pull/$pr; \
+            git fetch origin +refs/pull/$pr/head:refs/remotes/origin/pull/$pr \
+            && git checkout pull/$pr; \
     else \
-            git fetch; \
+            git fetch \
+            && git checkout $revision; \
     fi
-RUN git checkout $revision
