@@ -302,7 +302,7 @@ pipeline {
 
                     steps {
                         dir("docker") {
-                            sh "docker build --build-arg revision=${sha1} -t bluebrain/spack ."
+                            sh "docker build --build-arg HTTP_PROXY=http://bbpproxy.epfl.ch:80 --build-arg revision=${sha1} -t bluebrain/spack ."
                         }
                     }
                 }
