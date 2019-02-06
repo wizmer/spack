@@ -63,15 +63,16 @@ RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" \
 RUN spack compiler find && spack compilers
 
 RUN mkdir -p $SPACK_ROOT/etc/spack
-ADD packages.yaml $SPACK_ROOT/etc/spack
-ADD modules.yaml $SPACK_ROOT/etc/spack
-ADD config.yaml $SPACK_ROOT/etc/spack
+copy config.yaml modules.yaml packages.yaml $SPACK_ROOT/etc/spack
 
 WORKDIR "/spack"
-RUN git fetch
 
 ARG pr
-RUN [[ "x$pr" != "x" ]] && git fetch origin +refs/pull/$pr/head:refs/remotes/origin/pull/$pr
-
 ARG revision=develop
+
+RUN if [[ "x$pr" != "x" ]]; then \
+            git fetch origin +refs/pull/$pr/*:refs/remotes/origin/pull/$pr; \
+    else \
+            git fetch; \
+    fi
 RUN git checkout $revision
