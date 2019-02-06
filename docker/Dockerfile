@@ -62,7 +62,7 @@ RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" \
 RUN spack compiler find && spack compilers
 
 RUN mkdir -p $SPACK_ROOT/etc/spack
-COPY config.yaml modules.yaml packages.yaml $SPACK_ROOT/etc/spack
+COPY config.yaml modules.yaml packages.yaml $SPACK_ROOT/etc/spack/
 
 WORKDIR "/spack"
 
