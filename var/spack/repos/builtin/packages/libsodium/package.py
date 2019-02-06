@@ -15,7 +15,7 @@ class Libsodium(AutotoolsPackage):
 
     version('1.0.17', '0f71e2680187a1558b5461e6879342c5')
     version('1.0.16', '37b18839e57e7a62834231395c8e962b')
-    version('1.0.15', '070373e73a0b10bd96f412e1732ebc42')
+    version('1.0.15', 'c06c76f4c87f98ea460bc7efd98f02ac')
     version('1.0.13', 'f38aac160a4bd05f06f743863e54e499')
     version('1.0.12', 'c308e3faa724b630b86cc0aaf887a5d4')
     version('1.0.11', 'b58928d035064b2a46fb564937b83540')
