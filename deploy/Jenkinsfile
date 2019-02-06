@@ -127,7 +127,7 @@ pipeline {
                                       branches: [[name: "FETCH_HEAD"]],
                                       extensions: [[$class: 'LocalBranch']],
                                       userRemoteConfigs: [[
-                                            refspec: "+refs/pull/${env.ghprbPullId}/head:refs/remotes/origin/pull/${env.ghprbPullId}", 
+                                            refspec: "+refs/pull/${env.ghprbPullId}/head:refs/remotes/origin/pull/${env.ghprbPullId}",
                                             url: "https://github.com/BlueBrain/spack.git"
                                       ]]])
 
@@ -302,7 +302,7 @@ pipeline {
 
                     steps {
                         dir("docker") {
-                            sh "docker build --build-arg proxy=http://bbpproxy.epfl.ch:80 --build-arg revision=${sha1} -t bluebrain/spack ."
+                            sh "docker build --build-arg proxy=http://bbpproxy.epfl.ch:80 --build-arg pr=${env.ghprbPullId} --build-arg revision=${sha1} -t bluebrain/spack ."
                         }
                     }
                 }

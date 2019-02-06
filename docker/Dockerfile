@@ -69,5 +69,11 @@ ADD config.yaml $SPACK_ROOT/etc/spack
 
 RUN ssh-keyscan github.com >> /etc/ssh/known_hosts
 
+WORKDIR "/spack"
+RUN git fetch
+
+ARG pr
+RUN [[ "x$pr" != "x" ]] && git fetch +refs/pull/$pr/head:refs/remotes/origin/pull/$pr
+
 ARG revision=develop
-RUN cd /spack && git pull && git checkout $revision
+RUN git checkout $revision
