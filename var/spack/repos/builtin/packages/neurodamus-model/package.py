@@ -102,17 +102,18 @@ class NeurodamusModel(Package):
 
         # Create corenrn mods
         if '+coreneuron' in spec:
-            include_flag += ' -DENABLE_CORENEURON -I%s' % (spec['coreneuron'].prefix.include)
+            include_flag += ' -I%s' % (spec['coreneuron'].prefix.include)
             which('nrnivmodl-core')(
                 '-i', include_flag, '-l', link_flag, '-n', self.mech_name,
-                '-v', str(spec.version), 'core_mechs')
-            output_dir = spec.architecture.target + "_core"
+                '-v', str(spec.version), '-c', 'core_mechs')
+            output_dir = spec.architecture.target
             mechlib = find_libraries("libcorenrnmech*", output_dir)
             assert len(mechlib), "Error creating corenrnmech lib"
 
             #Link neuron special with this mechs lib
             link_flag += ' ' + mechlib.ld_flags + \
                          ' ' + self._get_lib_flags(spec, 'coreneuron')
+            include_flag += ' -DENABLE_CORENEURON'
 
         with profiling_wrapper_on():
             which('nrnivmodl')('-incflags', include_flag, '-loadflags', link_flag, 'm')
@@ -157,11 +158,12 @@ class NeurodamusModel(Package):
 
         # Coreneuron: move special-core to bin and libcorenrnmech to lib
         if spec.satisfies('+coreneuron'):
-            shutil.move("modc_core", prefix.share)
-            outdir = spec.architecture.target + '_core'
+            outdir = spec.architecture.target
             shutil.move(join_path(outdir, 'special-core'), prefix.bin)
             for libname in find_libraries("libcorenrnmech*", outdir):
                 shutil.move(libname, prefix.lib)
+            # Then modc
+            shutil.move(join_path(outdir, 'modc_core'), prefix.share)
 
         # PY: Link only important stuff, and create a new lib link (to our lib)
         py_src = spec['neurodamus-core'].prefix.python
