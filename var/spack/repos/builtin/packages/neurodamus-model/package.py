@@ -11,13 +11,15 @@ class NeurodamusModel(Package):
     """An 'abstract' base package for Simulation Models. Therefore no version.
        Eventually in the future Models are independent entities, not tied to neurodamus
     """
-    depends_on('neurodamus-core')
-
     variant('coreneuron',  default=False, description="Enable CoreNEURON Support")
     variant('profile',     default=False, description="Enable profiling using Tau")
     variant('synapsetool', default=True,  description="Enable Synapsetool reader")
     variant('sonata',      default=False, description="Enable Synapsetool with Sonata")
     variant('plasticity',  default=False, description="Use optimized ProbAMPANMDA_EMS and ProbGABAAB_EMS")
+    variant('python',      default=False, description="Install neurodamus-python alongside")
+
+    depends_on('neurodamus-core')
+    depends_on('neurodamus-core+python', when='+python')
 
     depends_on("mpi")
     depends_on("hdf5+mpi")
@@ -82,9 +84,8 @@ class NeurodamusModel(Package):
         """
         force_symlink('_merged_mod', 'm')
         dep_libs = ['reportinglib', 'hdf5',  'zlib']
-        profile_flag = '-DENABLE_TAU_PROFILER' if '+profile' in spec else ''
 
-        # Allow deps to not recurs bring their deps
+        profile_flag = '-DENABLE_TAU_PROFILER' if '+profile' in spec else ''
         link_flag = '-Wl,-rpath,' + prefix.lib
         include_flag = ' -I%s -I%s %s' % (spec['reportinglib'].prefix.include,
                                           spec['hdf5'].prefix.include,
@@ -94,10 +95,10 @@ class NeurodamusModel(Package):
             dep_libs.append('synapsetool')
 
         for dep in dep_libs:
-            link_flag += ' ' + self._get_lib_flags(spec, dep)
+            link_flag += self._get_lib_flags(dep)
 
         # If synapsetool is static we have to bring dependencies
-        if spec.satisfies('+synapsetool') and spec.satisfies('^synapsetool~shared'):
+        if spec.satisfies('+synapsetool') and spec['synapsetool'].satisfies('~shared'):
             link_flag += ' ' + spec['synapsetool'].package.dependency_libs(spec).joined()
 
         # Create corenrn mods
@@ -110,31 +111,32 @@ class NeurodamusModel(Package):
             mechlib = find_libraries("libcorenrnmech*", output_dir)
             assert len(mechlib), "Error creating corenrnmech lib"
 
-            #Link neuron special with this mechs lib
-            link_flag += ' ' + mechlib.ld_flags + \
-                         ' ' + self._get_lib_flags(spec, 'coreneuron')
-            include_flag += ' -DENABLE_CORENEURON'
+            # Link neuron special with this mechs lib
+            link_flag += ' ' + mechlib.ld_flags + self._get_lib_flags('coreneuron')
+            include_flag += ' -DENABLE_CORENEURON'  # only now, otherwise some mods assume neuron
 
         with profiling_wrapper_on():
             which('nrnivmodl')('-incflags', include_flag, '-loadflags', link_flag, 'm')
         special = os.path.join(os.path.basename(self.neuron_archdir), 'special')
         assert os.path.isfile(special)
 
-    @staticmethod
-    def _get_lib_flags(spec, lib_pckg):
-        if spec[lib_pckg].satisfies('+shared'):
-            # For shared libs we define rpath and ld_flags
-            return "%s %s" % (spec[lib_pckg].libs.rpath_flags,
-                              spec[lib_pckg].libs.ld_flags)
-        else:
-            # Otherwise full path is ok. (What about sub-dependencies?)
-            return spec[lib_pckg].libs.joined()
+    def _get_lib_flags(self, lib_name):
+        """ Helper method to get linking flags similar to spack build, for solid deployments:
+              1. static libs passed via full path
+              2. shared libs passed with -L -l and RPATH flags
+            Attention: This func doesnt handle recursive deps of static libs.
+        """
+        spec = self.spec[lib_name]
+        if spec.satisfies('+shared'):  # Prefer shared if both exist
+            return " %s %s" % (spec.libs.rpath_flags, spec.libs.ld_flags)
+        return ' ' + spec.libs.joined()
 
     def install(self, spec, prefix):
-        """ Move hoc, mod and libnrnmech.so to lib, generated mod.c's into lib/modc.
-            Find and move "special" to bin.
-            If +coreneuron, install the shared lib to lib/ and corenrn-special to bin.
-            If neurodamus-core comes with python, create links under python.
+        """ Install:
+              bin/ <- special and special-core
+              lib/ <- hoc, mod and lib*mech*.so
+              share/ <- neuron & coreneuron mod.c's (modc and modc_core)
+              python/ If neurodamus-core comes with python, create links
         """
         mkdirp(prefix.bin)
         mkdirp(prefix.lib)
@@ -145,7 +147,7 @@ class NeurodamusModel(Package):
         arch = os.path.basename(self.neuron_archdir)
         shutil.move(join_path(arch, 'special'), prefix.bin)
 
-        # Copy c mods
+        # Copy c mods (for neuron)
         for cmod in find(arch, "*.c", recursive=False):
             shutil.move(cmod, prefix.share.modc)
 
@@ -156,8 +158,8 @@ class NeurodamusModel(Package):
             sed('-i', 's#-dll .*#-dll %s#' % prefix.lib.join('libnrnmech.so'),
                 prefix.bin.special)
 
-        # Coreneuron: move special-core to bin and libcorenrnmech to lib
         if spec.satisfies('+coreneuron'):
+            # move special-core to bin and libcorenrnmech* to lib
             outdir = spec.architecture.target
             shutil.move(join_path(outdir, 'special-core'), prefix.bin)
             for libname in find_libraries("libcorenrnmech*", outdir):
@@ -165,9 +167,10 @@ class NeurodamusModel(Package):
             # Then modc
             shutil.move(join_path(outdir, 'modc_core'), prefix.share)
 
-        # PY: Link only important stuff, and create a new lib link (to our lib)
-        py_src = spec['neurodamus-core'].prefix.python
-        if os.path.isdir(py_src):
+        if spec.satisfies('+python'):
+            py_src = spec['neurodamus-core'].prefix.python
+            assert os.path.isdir(py_src)
+            # Link only important stuff, and create a new lib link (to our lib)
             pydir = prefix.lib.python
             mkdirp(py_dst)
             force_symlink('../lib', py_dst.lib)
