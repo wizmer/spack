@@ -13,42 +13,11 @@ RUN apt-get update
 RUN apt-get -y install software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
-RUN apt-get -y \
-            --allow-downgrades \
-            --allow-remove-essential \
-            --allow-change-held-packages \
-            install \
-                autoconf \
-                automake \
-                bison \
-                build-essential \
-                cmake \
-                curl \
-                cython \
-                diffutils \
-                flex \
-                gfortran \
-                git \
-                libboost-all-dev \
-                libbz2-dev \
-                libhdf5-serial-dev \
-                libncurses-dev \
-                libpciaccess-dev \
-                libopenmpi-dev \
-                libreadline-dev \
-                libtool \
-                libxml2-dev \
-                make \
-                numactl \
-                pkg-config \
-                python2.7-dev \
-                python-minimal \
-                python-numpy \
-                software-properties-common \
-                tcl-dev \
-                unzip \
-                vim \
-                zlib1g-dev
+RUN sed -e 's/#.*//g' ../sysconfig/ubuntu-18.04/packages| \
+        xargs -r apt-get --allow-downgrades \
+                         --allow-remove-essential \
+                         --allow-change-held-packages \
+                         install
 
 RUN git clone https://github.com/BlueBrain/spack.git
 ENV SPACK_ROOT $PWD/spack
@@ -62,7 +31,7 @@ RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" \
 RUN spack compiler find && spack compilers
 
 RUN mkdir -p $SPACK_ROOT/etc/spack
-COPY config.yaml modules.yaml packages.yaml $SPACK_ROOT/etc/spack/
+COPY ../sysconfig/ubuntu-18.04/*.yaml $SPACK_ROOT/etc/spack/
 
 WORKDIR "/spack"
 
