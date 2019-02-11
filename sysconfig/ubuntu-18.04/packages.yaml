@@ -46,6 +46,10 @@ packages:
         paths:
             libtool@2.4.6: /usr
         version: [2.4.6]
+    libxml2:
+        paths:
+            libxml2@2.9.4: /usr
+        version: [2.9.4]
     m4:
         paths:
             m4@1.4.18: /usr
