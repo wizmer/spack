@@ -32,6 +32,10 @@ checkout:
     $ cd MVDTool
     $ spack diy -y --test=root mvdtool@my-custom-version
 
+This version of MVDTool can now be re-used by Spack to build other
+software, when `^mvdtool@my-custom-version` is appended to the appropriate
+spec.
+
 ## Building software on BlueBrain5
 
 On BB5, clone this repository to get started using Spack.
