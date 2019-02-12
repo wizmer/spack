@@ -14,6 +14,7 @@ class NeurodamusNeocortex(NeurodamusModel):
     version('develop', git=git, branch='master', submodules=True)
 
     variant('v5', default=True, description='Enable support for previous v5 circuits')
+    variant('plasticity',  default=False, description="Use optimized ProbAMPANMDA_EMS and ProbGABAAB_EMS")
 
     mech_name = "neocortex"
 
@@ -22,3 +23,6 @@ class NeurodamusNeocortex(NeurodamusModel):
         if self.spec.satisfies('+v5'):
             copy_all('mod/v5', 'mod', copyfunc=copy_all.symlink2)
         copy_all('mod/v6', 'mod', copyfunc=copy_all.symlink2)
+        # Plasticity
+        if self.spec.satisfies('+plasticity'):
+            copy_all('mod/v6/optimized', 'mod', copyfunc=copy_all.symlink2)

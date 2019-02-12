@@ -14,7 +14,6 @@ class NeurodamusModel(Package):
     variant('profile',     default=False, description="Enable profiling using Tau")
     variant('synapsetool', default=True,  description="Enable Synapsetool reader")
     variant('sonata',      default=False, description="Enable Synapsetool with Sonata")
-    variant('plasticity',  default=False, description="Use optimized ProbAMPANMDA_EMS and ProbGABAAB_EMS")
     variant('python',      default=False, description="Install neurodamus-python alongside")
 
     depends_on('neurodamus-core')
@@ -65,9 +64,6 @@ class NeurodamusModel(Package):
             with open(core_prefix.mod.join("coreneuron_modlist.txt")) as core_mods:
                 for aux_mod in core_mods:
                     shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'core_mechs')
-
-        if spec.satisfies('+plasticity'):
-            copy_all('common/mod/optimized', 'common/mod')
 
         # Copy from the several sources
         for hoc_src in self._hoc_srcs:
