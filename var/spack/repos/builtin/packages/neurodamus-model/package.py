@@ -4,7 +4,6 @@ from spack import *
 from contextlib import contextmanager
 import shutil
 import os
-import sys
 
 
 class NeurodamusModel(Package):
@@ -46,10 +45,10 @@ class NeurodamusModel(Package):
     phases = ['merge_hoc_mod', 'build', 'install']
 
     # These vars can be overriden by subclasses to specify additional sources
-    # This is required since some models have several sources, e.g.: thalamus
-    # By default they use common (which should come from submodule)
+    # This is required since some models may have a different source structure
+    # By default common mods have symlink, but hocs are copied separately
     _hoc_srcs = ('common/hoc', 'hoc')
-    _mod_srcs = ('common/mod', 'mod')
+    _mod_srcs = ('mod',)
 
     # The name of the mechanism, which cen be overriden
     mech_name = ""
@@ -171,7 +170,7 @@ class NeurodamusModel(Package):
             py_src = spec['neurodamus-core'].prefix.python
             assert os.path.isdir(py_src)
             # Link only important stuff, and create a new lib link (to our lib)
-            pydir = prefix.lib.python
+            py_dst = prefix.lib.python
             mkdirp(py_dst)
             force_symlink('../lib', py_dst.lib)
             for name in ('neurodamus', 'init.py', '_debug.py'):
@@ -187,6 +186,7 @@ class NeurodamusModel(Package):
                     run_env.prepend_path('PYTHONPATH', m.value)
             run_env.prepend_path('PYTHONPATH', self.prefix.python)
             run_env.set('NEURODAMUS_PYTHON', self.prefix.python)
+
 
 @contextmanager
 def profiling_wrapper_on():
@@ -212,15 +212,19 @@ def symlink2(src, dst):
         dst = join_path(dst, os.path.basename(src))
     else:
         dst_dir = os.path.dirname(dst)
-    src = os.path.relpath(src, dst_dir) # update path relation
+    src = os.path.relpath(src, dst_dir)  # update path relation
+    # Silently replace links, just like copy replaces files
+    if os.path.islink(dst):
+        os.remove(dst)
     os.symlink(src, dst)
 
 
 def filter_out(src, dst):
     """Remove src from dst, copy compat"""
-    try:
+    fname = join_path(dst, os.path.basename(src))
+    if os.path.exists(fname):
         os.remove(join_path(dst, os.path.basename(src)))
-    except: pass
+
 
 # Shortcut to extra operators
 copy_all.symlink2 = symlink2
