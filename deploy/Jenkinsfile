@@ -300,10 +300,28 @@ pipeline {
                         label 'docker'
                     }
 
-                    steps {
-                        dir("docker") {
-                            sh "docker build --build-arg proxy=http://bbpproxy.epfl.ch:80 --build-arg pr=${env.ghprbPullId} --build-arg revision=${sha1} -t bluebrain/spack ."
-                            // sh "docker push bluebrain/spack"
+                    stages {
+                        stage('PR Build') {
+                            steps {
+                                dir("docker") {
+                                    sh "docker build --build-arg proxy=http://bbpproxy.epfl.ch:80 --build-arg pr=${env.ghprbPullId} --build-arg revision=${sha1} -t bluebrain/spack ."
+                                }
+                            }
+                        }
+                        stage('Build') {
+                            when {
+                                not {
+                                    expression {
+                                        return env.ghprbPullId
+                                    }
+                                }
+                            }
+                            steps {
+                                dir("docker") {
+                                    sh "docker build --build-arg proxy=http://bbpproxy.epfl.ch:80 --build-arg revision=${sha1} -t bluebrain/spack ."
+                                    sh "docker push bluebrain/spack"
+                                }
+                            }
                         }
                     }
                 }
