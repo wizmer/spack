@@ -46,7 +46,7 @@ class NeurodamusModel(Package):
     # These vars can be overriden by subclasses to specify additional sources
     # This is required since some models may have a different source structure
     # By default common mods have symlink, but hocs are copied separately
-    _hoc_srcs = ('common/hoc', 'hoc')
+    _hoc_srcs = ('hoc',)
     _mod_srcs = ('mod',)
 
     # The name of the mechanism, which cen be overriden
