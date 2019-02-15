@@ -219,7 +219,7 @@ def filter_out(src, dst):
     """Remove src from dst, copy compat"""
     fname = join_path(dst, os.path.basename(src))
     if os.path.exists(fname):
-        os.remove(join_path(dst, os.path.basename(src)))
+        os.remove(fname)
 
 
 # Shortcut to extra operators
