@@ -56,6 +56,14 @@ class Coreneuron(CMakePackage):
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')
 
+    # Old versions. Required by previous neurodamus package.
+    version('hippocampus', git=url, submodules=True)
+    version('master', git=url, submodules=True)
+    version('plasticity', git=url, preferred=True, submodules=True)
+    depends_on('neurodamus-base@plasticity', when='@plasticity')
+    depends_on('neurodamus-base@hippocampus', when='@hippocampus')
+    depends_on('neurodamus-base@master', when='@master')
+
     @run_before('build')
     def profiling_wrapper_on(self):
         os.environ["USE_PROFILER_WRAPPER"] = "1"
@@ -128,6 +136,13 @@ class Coreneuron(CMakePackage):
             # PGI compiler not able to compile nrnreport.cpp when enabled
             # OpenMP, OpenACC and Reporting. Disable ReportingLib for GPU
             options.append('-DENABLE_REPORTINGLIB=OFF')
+
+        # Suppport for previous neurodamus package
+        if '^neurodamus-base' in spec:
+            modlib_dir = self.spec['neurodamus-base'].prefix.lib.modlib
+            modfile_list = '%s/coreneuron_modlist.txt' % modlib_dir
+            options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
+            options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
 
         return options
 

@@ -45,33 +45,36 @@ class NeurodamusModel(Package):
 
     # These vars can be overriden by subclasses to specify additional sources
     # This is required since some models may have a different source structure
-    # By default common mods have symlink, but hocs are copied separately
     _hoc_srcs = ('hoc',)
     _mod_srcs = ('mod',)
 
     # The name of the mechanism, which cen be overriden
-    mech_name = ""
+    mech_name = ''
 
     def merge_hoc_mod(self, spec, prefix):
         core_prefix = spec['neurodamus-core'].prefix
+        merged_hoc = '_merged_hoc'
+        merged_mod = '_merged_mod'
+        merged_mod_core = '_core_mechs'
+
         # First Initialize with core hoc / mods
-        copy_tree(core_prefix.hoc, '_merged_hoc')
-        copy_tree(core_prefix.mod, '_merged_mod')
+        copy_tree(core_prefix.hoc, merged_hoc)
+        copy_tree(core_prefix.mod, merged_mod)
 
         # If we shall build mods for coreneuron, only bring from core those specified
         if spec.satisfies("+coreneuron"):
-            mkdirp('core_mechs')
+            mkdirp(merged_mod_core)
             with open(core_prefix.mod.join("coreneuron_modlist.txt")) as core_mods:
                 for aux_mod in core_mods:
-                    shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'core_mechs')
+                    shutil.copy(core_prefix.mod.join(aux_mod.strip()), merged_mod_core)
 
-        # Copy from the several sources
+        # Copy from the several sources (typically just 'hoc' and 'mod')
         for hoc_src in self._hoc_srcs:
-            copy_all(hoc_src, '_merged_hoc')
+            copy_all(hoc_src, merged_hoc)
         for mod_src in self._mod_srcs:
-            copy_all(mod_src, '_merged_mod')
+            copy_all(mod_src, merged_mod)
             if spec.satisfies("+coreneuron"):
-                copy_all(mod_src, 'core_mechs')
+                copy_all(mod_src, merged_mod_core)
 
     def build(self, spec, prefix):
         """ Build mod files from m dir with nrnivmodl
@@ -101,7 +104,7 @@ class NeurodamusModel(Package):
             include_flag += ' -I%s' % (spec['coreneuron'].prefix.include)
             which('nrnivmodl-core')(
                 '-i', include_flag, '-l', link_flag, '-n', self.mech_name,
-                '-v', str(spec.version), '-c', 'core_mechs')
+                '-v', str(spec.version), '-c', '_core_mechs')
             output_dir = spec.architecture.target
             mechlib = find_libraries("libcorenrnmech*", output_dir)
             assert len(mechlib), "Error creating corenrnmech lib"
@@ -165,12 +168,12 @@ class NeurodamusModel(Package):
         if spec.satisfies('+python'):
             py_src = spec['neurodamus-core'].prefix.python
             assert os.path.isdir(py_src)
-            # Link only important stuff, and create a new lib link (to our lib)
+            # Link required paths, create a new lib link (to our lib)
             py_dst = prefix.lib.python
             mkdirp(py_dst)
             force_symlink('../lib', py_dst.lib)
             for name in ('neurodamus', 'init.py', '_debug.py'):
-                os.symlink(py_src.join(name), py_dst.join(name))
+                force_symlink(py_src.join(name), py_dst.join(name))
 
     def setup_environment(self, spack_env, run_env):
         run_env.prepend_path('PATH', self.prefix.bin)

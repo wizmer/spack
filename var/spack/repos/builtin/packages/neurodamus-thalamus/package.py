@@ -12,7 +12,3 @@ class NeurodamusThalamus(NeurodamusModel):
     git      = "ssh://bbpcode.epfl.ch/sim/models/thalamus"
 
     version('develop', git=git, branch='master', submodules=True)
-
-    # Override
-    _mod_srcs = ('common/mod', 'deps/neocortex/mod', 'mod')
-

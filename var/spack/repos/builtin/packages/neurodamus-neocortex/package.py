@@ -14,7 +14,7 @@ class NeurodamusNeocortex(NeurodamusModel):
     version('develop', git=git, branch='master', submodules=True)
 
     variant('v5', default=True, description='Enable support for previous v5 circuits')
-    variant('plasticity',  default=False, description="Use optimized ProbAMPANMDA_EMS and ProbGABAAB_EMS")
+    variant('plasticity', default=False, description="Use optimized ProbAMPANMDA_EMS and ProbGABAAB_EMS")
 
     mech_name = "neocortex"
 
