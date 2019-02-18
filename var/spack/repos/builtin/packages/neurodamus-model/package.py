@@ -176,6 +176,7 @@ class NeurodamusModel(Package):
                 force_symlink(py_src.join(name), py_dst.join(name))
 
     def setup_environment(self, spack_env, run_env):
+        spack_env.unset('LC_ALL')
         run_env.prepend_path('PATH', self.prefix.bin)
         run_env.set('HOC_LIBRARY_PATH', self.prefix.lib.hoc)
 
