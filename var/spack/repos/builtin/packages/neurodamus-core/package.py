@@ -11,7 +11,7 @@ class NeurodamusCore(Package):
     homepage = "ssh://bbpcode.epfl.ch/sim/neurodamus-core"
     git      = "ssh://bbpcode.epfl.ch/sim/neurodamus-core"
 
-    version('develop', git=git, branch='master')
+    version('develop', git=git, branch='sandbox/jblanco/buffer_size')
 
     variant('python', default=False, description="Enable Python Neurodamus")
 
