@@ -11,7 +11,7 @@ def deploy(stage) {
     dir("${BASEDIR}") {
         sh "./deploy.sh ${stage}"
 
-        if (env.CHANGE_ID && filesExists('missing.txt')) {
+        if (env.CHANGE_ID && fileExists('missing.txt')) {
             def missing = readFile('missing.txt')
             def msg = "No specs were found for the following modules for stage *${stage}*:\n```\n${missing}\n```"
             comment(msg)
