@@ -441,7 +441,12 @@ generate_specs() {
         rm -rf "missing.txt"
         moddef="configs/${stage}/modules.yaml"
         if [[ -f "${moddef}" ]]; then
+            log "matching generated specs to modules"
             modcheck "${moddef}" "${datadir}/specs.txt"
+            if [[ -f "missing.txt" ]]; then
+                log "...found missing specs for modules:"
+                cat "missing.txt"
+            fi
         fi
     done
 }
