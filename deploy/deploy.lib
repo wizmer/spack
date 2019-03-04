@@ -437,6 +437,12 @@ generate_specs() {
             log "...using ${stub}.yaml"
             spackd --input packages/${stub}.yaml packages x86_64 >> "${datadir}/specs.txt"
         done
+
+        rm -rf "missing.txt"
+        moddef="configs/${stage}/modules.yaml"
+        if [[ -f "${moddef}" ]]; then
+            modcheck "${moddef}" "${datadir}/specs.txt"
+        fi
     done
 }
 

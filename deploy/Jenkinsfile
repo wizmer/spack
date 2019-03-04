@@ -7,6 +7,18 @@ def deployment_directory(parent) {
     }
 }
 
+def deploy(stage) {
+    dir("${BASEDIR}") {
+        sh "./deploy.sh ${stage}"
+
+        if (env.CHANGE_ID && filesExists('missing.txt')) {
+            def missing = readFile('missing.txt')
+            def msg = "No specs were found for the following modules:\n```\n${missing}\n```"
+            comment(msg)
+        }
+    }
+}
+
 def post_process() {
     dir("${BASEDIR}") {
         def pull = env.ghprbPullId
@@ -159,9 +171,7 @@ pipeline {
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh compilers"
-                }
+                deploy("compilers")
             }
 
             post {
@@ -180,9 +190,7 @@ pipeline {
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh tools"
-                }
+                deploy("tools")
             }
 
             post {
@@ -201,9 +209,7 @@ pipeline {
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh external-libraries"
-                }
+                deploy("external-libraries")
             }
 
             post {
@@ -224,9 +230,7 @@ pipeline {
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh serial-libraries"
-                }
+                deploy("serial-libraries")
             }
 
             post {
@@ -245,9 +249,7 @@ pipeline {
             }
 
             steps {
-                dir("${BASEDIR}") {
-                    sh "./deploy.sh parallel-libraries"
-                }
+                deploy("parallel-libraries")
             }
 
             post {
@@ -268,9 +270,7 @@ pipeline {
             steps {
                 withEnv(['SOURCECACHE=false',
                          'BUILDCACHE=false']) {
-                    dir("${BASEDIR}") {
-                        sh "./deploy.sh applications"
-                    }
+                    deploy("applications")
                 }
             }
 
