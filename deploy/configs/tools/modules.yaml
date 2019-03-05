@@ -29,7 +29,6 @@ modules:
     whitelist:
       - allinea-forge
       - cmake
-      - cuda
       - hpctoolkit
       - hpe-mpi
       - ior
