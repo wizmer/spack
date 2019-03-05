@@ -303,8 +303,10 @@ pipeline {
                         }
                     }
                     steps {
+                        sh "ls"
                         unstash "feedback-stash"
                         sh "ls"
+                        sh "pwd"
                     }
                 }
 
