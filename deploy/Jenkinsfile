@@ -188,7 +188,6 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/compilers.xml", allowEmptyResults: true
                 }
             }
@@ -207,7 +206,6 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/tools.xml", allowEmptyResults: true
                 }
             }
@@ -226,7 +224,6 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/external-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -247,7 +244,6 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/serial-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -266,7 +262,6 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/parallel-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -288,8 +283,8 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/applications.xml", allowEmptyResults: true
+                    stash name: "feedback-stash", includes: "feedback.txt"
                 }
 
                 success {
@@ -300,6 +295,18 @@ pipeline {
 
         stage('Post-Mortem') {
             parallel {
+                stage('Feedback') {
+                    agent none
+                    when {
+                        expression {
+                            return env.ghprbPullId
+                        }
+                    }
+                    steps {
+                        unstash "feedback-stash"
+                    }
+                }
+
                 stage('Documentation') {
                     steps {
                         sh "ls"
