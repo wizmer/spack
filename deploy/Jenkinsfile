@@ -188,7 +188,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/compilers.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/compilers.xml", allowEmptyResults: true
                 }
             }
@@ -207,7 +207,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/tools.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/tools.xml", allowEmptyResults: true
                 }
             }
@@ -226,7 +226,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/external-libraries.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/external-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -247,7 +247,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/serial-libraries.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/serial-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -266,7 +266,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/parallel-libraries.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/parallel-libraries.xml", allowEmptyResults: true
                 }
             }
@@ -288,7 +288,7 @@ pipeline {
 
             post {
                 always {
-                    archiveArtifacts artifacts: "stacks/applications.xml"
+                    archiveArtifacts artifacts: "feedback.txt"
                     junit testResults: "stacks/applications.xml", allowEmptyResults: true
                 }
 
