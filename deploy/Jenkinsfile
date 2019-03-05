@@ -304,6 +304,7 @@ pipeline {
                     }
                     steps {
                         unstash "feedback-stash"
+                        sh "ls"
                     }
                 }
 
