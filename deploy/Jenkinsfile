@@ -14,17 +14,15 @@ def deploy(stage) {
         if (env.ghprbPullId != null) {
             def contents = ''
             dir("${WORKSPACE}") {
-                contents = readFile("message.txt")
+                contents = readFile("feedback.txt")
             }
             if (fileExists('missing.txt')) {
                 def missing = readFile('missing.txt')
                 contents += "\nNo specs were found for the following modules for stage *${stage}*:\n"
                 contents += "```\n${missing}\n```"
-            } else {
-                contents += "\nModules and specs match for stage *${stage}*.\n"
             }
             dir("${WORKSPACE}") {
-                writeFile(file: "message.txt", text: contents)
+                writeFile(file: "feedback.txt", text: contents)
             }
         }
     }
@@ -158,7 +156,7 @@ pipeline {
                             git(url: "ssh://bbpcode.epfl.ch/user/kumbhar/spack-licenses")
                         }
                         dir("${WORKSPACE}") {
-                            writeFile(file: 'message.txt', text: '')
+                            writeFile(file: 'feedback.txt', text: '')
                         }
                     }
                 }
