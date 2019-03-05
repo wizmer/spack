@@ -14,7 +14,7 @@ def deploy(stage) {
         if (env.ghprbPullId != null) {
             def contents = ''
             dir("${WORKSPACE}/deploy") {
-                def contents = readFile("message.txt")
+                contents = readFile("message.txt")
             }
             if (fileExists('missing.txt')) {
                 def missing = readFile('missing.txt')
