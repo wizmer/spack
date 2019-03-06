@@ -178,12 +178,13 @@ class NeurodamusModel(Package):
         run_env.prepend_path('PATH', self.prefix.bin)
         run_env.set('HOC_LIBRARY_PATH', self.prefix.lib.hoc)
 
-        if os.path.isdir(self.prefix.python):
+        pylib = self.prefix.lib.python
+        if os.path.isdir(pylib):
             for m in spack_env.env_modifications:
                 if m.name == 'PYTHONPATH':
                     run_env.prepend_path('PYTHONPATH', m.value)
-            run_env.prepend_path('PYTHONPATH', self.prefix.python)
-            run_env.set('NEURODAMUS_PYTHON', self.prefix.python)
+            run_env.prepend_path('PYTHONPATH', pylib)
+            run_env.set('NEURODAMUS_PYTHON', pylib)
 
 
 @contextmanager
