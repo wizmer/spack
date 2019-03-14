@@ -13,14 +13,15 @@ RUN apt-get update
 RUN apt-get -y install software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
-RUN sed -e 's/#.*//g' ../sysconfig/ubuntu-18.04/packages| \
+COPY sysconfig/ubuntu-18.04/packages /tmp/
+RUN sed -e 's/#.*//g' /tmp/packages| \
         xargs -r apt-get --allow-downgrades \
                          --allow-remove-essential \
                          --allow-change-held-packages \
-                         install
+                         install -y
 
-RUN git clone https://github.com/BlueBrain/spack.git
-ENV SPACK_ROOT $PWD/spack
+RUN git clone https://github.com/BlueBrain/spack.git /opt/spack
+ENV SPACK_ROOT /opt/spack
 ENV PATH $SPACK_ROOT/bin:$PATH
 
 # see this: http://stackoverflow.com/questions/20635472/using-the-run-instruction-in-a-dockerfile-with-source-does-not-work
@@ -31,9 +32,9 @@ RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" \
 RUN spack compiler find && spack compilers
 
 RUN mkdir -p $SPACK_ROOT/etc/spack
-COPY ../sysconfig/ubuntu-18.04/*.yaml $SPACK_ROOT/etc/spack/
+COPY sysconfig/ubuntu-18.04/*.yaml $SPACK_ROOT/etc/spack/
 
-WORKDIR "/spack"
+WORKDIR "/opt/spack"
 
 ARG pr
 ARG revision=develop
