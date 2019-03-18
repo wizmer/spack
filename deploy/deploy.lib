@@ -265,6 +265,9 @@ configure_compilers() {
         fi
 
         if [[ ${line} = *"intel"* ]]; then
+            set -x
+            $(spack -d location --install-dir gcc@6.4.0)
+            $(spack -d location --install-dir ${line})
             GCC_DIR=$(spack location --install-dir gcc@6.4.0)
 
             # update intel modules to use gcc@6.4.0 in .cfg files
@@ -277,6 +280,7 @@ configure_compilers() {
                     log "updated ${f} with newer GCC"
                 fi
             done
+            set +x
         elif [[ ${line} = *"pgi"* ]]; then
             #update pgi modules for network installation
             PGI_DIR=$(dirname $(which makelocalrc))
