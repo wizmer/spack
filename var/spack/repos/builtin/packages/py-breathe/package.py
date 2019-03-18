@@ -13,6 +13,7 @@ class PyBreathe(PythonPackage):
     homepage = "https://github.com/michaeljones/breathe"
     url      = "https://github.com/michaeljones/breathe/archive/v4.11.1.tar.gz"
 
+    version('develop', git=homepage, branch='master', clean=False)
     version('4.11.1', sha256='84723eefc7cc05da6895e2dd6e7c72926c5fd88a67de57edce42d99c058c7e06')
     version('4.11.0', sha256='8c9f900560529ca2f589f26759be94c2accad14fd83fee34d353cf6f446e09f6')
     version('4.10.0', sha256='10e294ca2927d40c83343674186ce6fad539acfb464ffd765fd371adc1126d4d')
