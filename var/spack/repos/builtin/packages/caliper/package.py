@@ -17,9 +17,11 @@ class Caliper(CMakePackage):
     """
 
     homepage = "https://github.com/LLNL/Caliper"
+    url      = "https://github.com/LLNL/Caliper/archive/v2.0.1.tar.gz"
     git      = "https://github.com/LLNL/Caliper.git"
 
     version('master')
+    version('1.9.1', tag='v1.9.1')
     version('1.7.0', tag='v1.7.0')
     # version 1.6.0 is broken b/c it downloads the wrong gotcha version
     version('1.6.0', tag='v1.6.0')
@@ -90,3 +92,8 @@ class Caliper(CMakePackage):
             args.append('-DMPI_CXX_COMPILER=%s' % spec['mpi'].mpicxx)
 
         return args
+
+    @property
+    def libs(self):
+        return find_libraries(
+            ['caliper', 'caliper-mpi'], root=self.prefix, recursive=True)
