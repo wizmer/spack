@@ -21,9 +21,11 @@ class Neuron(Package):
     homepage = "https://www.neuron.yale.edu/"
     url      = "http://www.neuron.yale.edu/ftp/neuron/versions/v7.5/nrn-7.5.tar.gz"
     git      = "https://github.com/nrnhines/nrn.git"
+    git      = "https://github.com/pramodk/nrn.git"
 
     version('develop', branch='master')
-    version('2018-10', commit='b3097b7', preferred=True)
+    version('caliper', branch='caliper', preferred=True)
+    version('2018-10', commit='b3097b7')
     version('2018-09', commit='9f36b13')
     version('7.6.2',   tag='7.6.2')
     # versions from url, with checksum
@@ -56,6 +58,7 @@ class Neuron(Package):
     depends_on('ncurses',     when='~cross-compile')
     depends_on('python@2.6:', when='+python', type=('build', 'link', 'run'))
     depends_on('tau',         when='+profile')
+    depends_on('caliper')
 
     conflicts('~shared',  when='+python')
     conflicts('+pysetup', when='~python')
@@ -158,8 +161,13 @@ class Neuron(Package):
         if self.spec.satisfies('%pgi'):
             flags += ' ' + self.compiler.pic_flag
 
+        flags += ' -I%s' % spec['caliper'].prefix.include
+
         options = ['CFLAGS=%s' % flags,
                    'CXXFLAGS=%s' % flags]
+
+        os.environ["CFLAGS"] = flags
+        os.environ["CXXFLAGS"] = flags
 
         if spec.satisfies('+profile'):
             options.extend(['--disable-dependency-tracking',
@@ -206,6 +214,7 @@ class Neuron(Package):
 
         options.append('--with-readline=%s' % spec['readline'].prefix)
         ld_flags = 'LDFLAGS=-L{0.prefix.lib} {0.libs.rpath_flags}'.format(spec['readline'])
+        ld_flags += ' -L{0.prefix.lib} {0.libs.rpath_flags} -lcaliper -lcaliper-mpi'.format(spec['caliper'])
 
         if 'ncurses' in spec:
             options.extend(['CURSES_LIBS=%s' % spec['ncurses'].libs.ld_flags,

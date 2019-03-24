@@ -13,6 +13,7 @@ class Eigen(CMakePackage):
 
     homepage = 'http://eigen.tuxfamily.org/'
     url      = 'https://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2'
+    git      = 'https://github.com/eigenteam/eigen-git-mirror.git'
 
     version('3.3.5', 'e83549a79d1b721da0f8899ab34edf95')
     version('3.3.4', 'a7aab9f758249b86c93221ad417fbe18')
@@ -22,6 +23,8 @@ class Eigen(CMakePackage):
     version('3.2.9', '59ab81212f8eb2534b1545a9b42c38bf618a0d71')
     version('3.2.8', '64f4aef8012a424c7e079eaf0be71793ab9bc6e0')
     version('3.2.7', 'cc1bacbad97558b97da6b77c9644f184')
+    # Todo : added outselves for cuda fixes
+    version('3.4', git=git, commit='b138753b1007d1e')
 
     variant('metis', default=True, description='Enables metis backend')
     variant('scotch', default=True, description='Enables scotch backend')

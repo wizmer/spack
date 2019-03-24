@@ -36,8 +36,8 @@ class Coreneuron(CMakePackage):
     homepage = "https://github.com/BlueBrain/CoreNeuron"
     url      = "https://github.com/BlueBrain/CoreNeuron"
 
-    version('develop', git=url, submodules=True)
-    version('0.14', git=url, submodules=True, preferred=True)
+    version('develop', git=url, submodules=True, preferred=True)
+    version('0.14', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
@@ -48,6 +48,11 @@ class Coreneuron(CMakePackage):
     variant('report', default=True, description="Enable reports using ReportingLib")
     variant('shared', default=True, description="Build shared library")
     variant('tests', default=False, description="Enable building tests")
+    variant('nmodl', default=True, description="Use NMODL")
+    variant('sympy', default=True, description="Use NMODL with SymPy")
+    variant('sympyopt', default=False, description="Use NMODL with SymPy Opt")
+    variant('caliper', default=True, description="Enable Caliper instrumentation")
+    variant('ispc', default=False, description="Enable ISPC backend")
 
     depends_on('boost', when='+tests')
     depends_on('cmake@3:', type='build')
@@ -56,6 +61,10 @@ class Coreneuron(CMakePackage):
     depends_on('reportinglib', when='+report')
     depends_on('reportinglib+profile', when='+report+profile')
     depends_on('tau', when='+profile')
+    depends_on('nmodl', when='+nmodl')
+    depends_on('eigen@3.4:~metis~scotch~fftw~suitesparse~mpfr', when='+nmodl')
+    depends_on('caliper', when='+caliper')
+    depends_on('ispc', when='+ispc')
 
     # Old versions. Required by previous neurodamus package.
     version('master',      git=url, submodules=True)
@@ -104,16 +113,7 @@ class Coreneuron(CMakePackage):
         spec   = self.spec
         flags = self.get_flags()
 
-        if spec.satisfies('+profile'):
-            env['CC']  = 'tau_cc'
-            env['CXX'] = 'tau_cxx'
-        elif 'bgq' in spec.architecture and spec.satisfies('+mpi'):
-            env['CC']  = spec['mpi'].mpicc
-            env['CXX'] = spec['mpi'].mpicxx
-
         options = ['-DENABLE_SPLAYTREE_QUEUING=ON',
-                   '-DCMAKE_C_FLAGS=%s' % flags,
-                   '-DCMAKE_CXX_FLAGS=%s' % flags,
                    '-DCMAKE_BUILD_TYPE=CUSTOM',
                    '-DENABLE_REPORTINGLIB=%s' % ('ON' if '+report' in spec else 'OFF'),
                    '-DENABLE_MPI=%s' % ('ON' if '+mpi' in spec else 'OFF'),
@@ -122,6 +122,43 @@ class Coreneuron(CMakePackage):
                    '-DFUNCTIONAL_TESTS=%s' % ('ON' if '+tests' in spec else 'OFF'),
                    '-DENABLE_HEADER_INSTALL=ON'  # for compiling mods to corenrn-special
                    ]
+
+        if spec.satisfies('+profile'):
+            env['CC']  = 'tau_cc'
+            env['CXX'] = 'tau_cxx'
+        elif 'bgq' in spec.architecture and spec.satisfies('+mpi'):
+            env['CC']  = spec['mpi'].mpicc
+            env['CXX'] = spec['mpi'].mpicxx
+        elif spec.satisfies('+mpi'):
+            options.append('-DCMAKE_C_COMPILER=%s' % spec['mpi'].mpicc)
+            options.append('-DCMAKE_CXX_COMPILER=%s' % spec['mpi'].mpicxx)
+
+        if spec.satisfies('+nmodl'):
+            options.append('-DENABLE_NMODL=ON')
+            options.append('-DNMODL_ROOT=%s' % spec['nmodl'].prefix)
+            flags += ' -I%s -I%s' % (spec['nmodl'].prefix.include, spec['eigen'].prefix.include.eigen3)
+
+        if spec.satisfies('+caliper'):
+            options.append('-DENABLE_CALIPER=ON')
+            options.append('-Dcaliper_DIR=%s' % spec['caliper'].prefix.share.cmake.caliper)
+
+        nmodl_options = 'passes --verbatim-rename --inline'
+
+        if spec.satisfies('+ispc'):
+            options.append('-DENABLE_ISPC_TARGET=ON')
+            options.append('-DCMAKE_ISPC_FLAGS=-O2 -g --pic --target=avx2-i32x8')
+            nmodl_options += ' host --ispc'
+
+        if spec.satisfies('+sympy'):
+            nmodl_options += ' sympy --analytic'
+
+        if spec.satisfies('+sympyopt'):
+            nmodl_options += ' --conductance --pade --cse'
+
+        options.append('-DNMODL_EXTRA_FLAGS=%s' % nmodl_options)
+
+        options.extend(['-DCMAKE_C_FLAGS=%s' % flags,
+                        '-DCMAKE_CXX_FLAGS=%s' % flags])
 
         if spec.satisfies('~shared') or spec.satisfies('+gpu'):
             options.append('-DCOMPILE_LIBRARY_TYPE=STATIC')
