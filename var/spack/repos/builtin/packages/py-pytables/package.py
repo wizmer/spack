@@ -12,6 +12,7 @@ class PyPytables(PythonPackage):
     homepage = "http://www.pytables.org/"
     url      = "https://github.com/PyTables/PyTables/archive/v3.4.0.tar.gz"
 
+    version('3.5.1', sha256='fda2e5071ce064ae1e808623e4c6166e6ab5f0f6152043991c5151d4e2622f2e')
     version('3.4.4', '2cd52095ebb097f5bf58fa65dc6574bb')
     version('3.4.0', 'a2ecd9727ecfb14d7722b78e014e28ea')
     version('3.3.0', '056c161ae0fd2d6e585b766adacf3b0b')
