@@ -33,17 +33,17 @@ class Caliper(CMakePackage):
     variant('dyninst', default=False,
             description='Enable symbol translation support with dyninst')
     # libunwind has some issues on Mac
-    variant('callpath', default=sys.platform != 'darwin',
+    variant('callpath', default=False,
             description='Enable callpath service (requires libunwind)')
     # pthread_self() signature is incompatible with PAPI_thread_init() on Mac
-    variant('papi', default=sys.platform != 'darwin',
+    variant('papi', default=False,
             description='Enable PAPI service')
-    variant('libpfm', default=is_linux,
+    variant('libpfm', default=False,
             description='Enable libpfm (perf_events) service')
     # gotcha doesn't work on Mac
-    variant('gotcha', default=sys.platform != 'darwin',
+    variant('gotcha', default=False,
             description='Enable GOTCHA support')
-    variant('sampler', default=is_linux,
+    variant('sampler', default=False,
             description='Enable sampling support on Linux')
     variant('sosflow', default=False,
             description='Enable SOSflow support')

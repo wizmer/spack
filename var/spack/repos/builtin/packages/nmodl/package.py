@@ -11,7 +11,7 @@ class Nmodl(CMakePackage):
 
     homepage = "git@github.com:BlueBrain/nmodl"
     url      = "git@github.com:BlueBrain/nmodl.git"
-    url      = "file:///Users/kumbhar/workarena/repos/bbp/incubator/nocmodl"
+    #url      = "file:///Users/kumbhar/workarena/repos/bbp/incubator/nocmodl"
 
     version('develop', branch='add_linear_solve_block_support', git=url, submodules=True, preferred=True)
 
