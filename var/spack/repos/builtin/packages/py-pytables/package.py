@@ -20,6 +20,7 @@ class PyPytables(PythonPackage):
 
     depends_on('hdf5@1.8.0:1.8.999', when="@:3.3.99")
     depends_on('hdf5@1.8.0:1.10.999', when="@3.4.0:")
+    depends_on('py-mock@2.0:', type=('build', 'run'))
     depends_on('py-numpy@1.8.0:', type=('build', 'run'))
     depends_on('py-numexpr@2.5.2:', type=('build', 'run'))
     depends_on('py-cython', type=('build', 'run'))
