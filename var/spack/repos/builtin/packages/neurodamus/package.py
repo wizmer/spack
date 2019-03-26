@@ -75,7 +75,6 @@ class Neurodamus(NeurodamusBase):
 
     # coreneuron support is available for plasticity model
     # and requires python support in neuron
-    conflicts('@hippocampus', when='+coreneuron')
     conflicts('^neuron~python', when='+coreneuron')
     conflicts('+sonata', when='~syntool')
 
