@@ -13,7 +13,7 @@ class Nmodl(CMakePackage):
     url      = "git@github.com:BlueBrain/nmodl.git"
     #url      = "file:///Users/kumbhar/workarena/repos/bbp/incubator/nocmodl"
 
-    version('develop', branch='master', git=url, submodules=True, preferred=True)
+    version('develop', branch='pr/traub-codegen-improvement', git=url, submodules=True, preferred=True)
 
     depends_on('bison@3.0:', type='build')
     depends_on('cmake@3.3.0:', type='build')
