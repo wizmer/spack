@@ -149,7 +149,6 @@ class Coreneuron(CMakePackage):
         if spec.satisfies('+ispc'):
             options.append('-DENABLE_ISPC_TARGET=ON')
             options.append('-DCMAKE_ISPC_FLAGS=-O2 -g --pic --target=avx2-i32x8')
-            nmodl_options += ' host --ispc'
 
         if spec.satisfies('+sympy'):
             nmodl_options += ' sympy --analytic'
