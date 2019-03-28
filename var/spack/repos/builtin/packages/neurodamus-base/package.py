@@ -33,10 +33,17 @@ class NeurodamusBase(Package):
     homepage = "ssh://bbpcode.epfl.ch/sim/neurodamus/bbp"
     url      = "ssh://bbpcode.epfl.ch/sim/neurodamus/bbp"
 
-    version('master',      git=url, branch='master')
-    version('mousify',     git=url, branch='sandbox/leite/mousify')
-    version('hippocampus', git=url, branch='sandbox/king/hippocampus')
-    version('plasticity',  git=url, branch='sandbox/king/saveupdate_v6support_mask', preferred=True)
+    version('master',      git=url, branch='sandbox/kumbhar/plasticity-nmodl-validation')
+    version('mousify',     git=url, branch='sandbox/kumbhar/mousify-nmodl-validation')
+    version('hippocampus', git=url, branch='sandbox/kumbhar/hippocampus-nmodl-validation')
+    version('plasticity',  git=url, branch='sandbox/kumbhar/plasticity-nmodl-validation', preferred=True)
+
+    variant('derivimplicit', default=False, description="Enable derivimplicit for glusynapse")
+
+    def patch(self):
+        # patch glusynapse for derivimplicit
+        if self.spec.satisfies('+derivimplicit'):
+            filter_file(r'METHOD euler', r'METHOD derivimplicit', 'lib/modlib/GluSynapse.mod')
 
     def install(self, spec, prefix):
         shutil.copytree('lib', prefix.lib)

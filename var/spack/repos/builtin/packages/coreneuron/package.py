@@ -53,6 +53,7 @@ class Coreneuron(CMakePackage):
     variant('sympyopt', default=False, description="Use NMODL with SymPy Opt")
     variant('caliper', default=True, description="Enable Caliper instrumentation")
     variant('ispc', default=False, description="Enable ISPC backend")
+    variant('derivimplicit', default=False, description="Enable derivimplicit for glusynapse")
 
     depends_on('boost', when='+tests')
     depends_on('cmake@3:', type='build')
@@ -74,6 +75,7 @@ class Coreneuron(CMakePackage):
     depends_on('neurodamus-base@master', when='@master')
     depends_on('neurodamus-base@mousify', when='@mousify')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
+    depends_on('neurodamus-base@plasticity+derivimplicit', when='@plasticity+derivimplicit')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
 
     @run_before('build')

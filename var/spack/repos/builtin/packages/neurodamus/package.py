@@ -38,6 +38,7 @@ class Neurodamus(NeurodamusBase):
     variant('python', default=False, description="Enable Python Neurodamus")
     variant('syntool', default=True, description="Enable Synapsetool reader")
     variant('sonata', default=False, description="Enable Synapsetool with Sonata")
+    variant('derivimplicit', default=False, description="Enable derivimplicit for glusynapse")
 
     depends_on("boost", when="+syntool")
     depends_on("hdf5+mpi")
@@ -55,12 +56,14 @@ class Neurodamus(NeurodamusBase):
     depends_on('coreneuron@master',  when='@master+coreneuron')
     depends_on('coreneuron@mousify', when='@mousify')
     depends_on('coreneuron@plasticity',  when='@plasticity+coreneuron')
+    depends_on('coreneuron@plasticity+derivimplicit',  when='@plasticity+coreneuron+derivimplicit')
     depends_on('coreneuron@hippocampus', when='@hippocampus+coreneuron')
 
     depends_on('neurodamus-base@master', when='@master')
     depends_on('neurodamus-base@mousify', when='@mousify')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
+    depends_on('neurodamus-base@plasticity+derivimplicit', when='@plasticity+derivimplicit')
 
     depends_on('neuron+profile', when='+profile')
     depends_on('reportinglib+profile', when='+profile')
