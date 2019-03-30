@@ -214,7 +214,7 @@ class Neuron(Package):
 
         options.append('--with-readline=%s' % spec['readline'].prefix)
         ld_flags = 'LDFLAGS=-L{0.prefix.lib} {0.libs.rpath_flags}'.format(spec['readline'])
-        ld_flags += ' -L{0.prefix.lib} {0.libs.rpath_flags} -lcaliper -lcaliper-mpi'.format(spec['caliper'])
+        ld_flags += ' {0.libs.ld_flags} {0.libs.rpath_flags}'.format(spec['caliper'])
 
         if 'ncurses' in spec:
             options.extend(['CURSES_LIBS=%s' % spec['ncurses'].libs.ld_flags,
