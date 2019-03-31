@@ -36,7 +36,7 @@ class Coreneuron(CMakePackage):
     homepage = "https://github.com/BlueBrain/CoreNeuron"
     url      = "https://github.com/BlueBrain/CoreNeuron"
 
-    version('develop', git=url, submodules=True, preferred=True)
+    version('develop', git=url, branch='memory-alignment', submodules=True, preferred=True)
     version('0.14', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
@@ -68,10 +68,10 @@ class Coreneuron(CMakePackage):
     depends_on('ispc', when='+ispc')
 
     # Old versions. Required by previous neurodamus package.
-    version('master',      git=url, submodules=True)
-    version('mousify',     git=url, submodules=True)
-    version('hippocampus', git=url, submodules=True)
-    version('plasticity',  git=url, submodules=True)
+    version('master',      git=url, branch='memory-alignment', submodules=True)
+    version('mousify',     git=url, branch='memory-alignment', submodules=True)
+    version('hippocampus', git=url, branch='memory-alignment', submodules=True)
+    version('plasticity',  git=url, branch='memory-alignment', submodules=True)
     depends_on('neurodamus-base@master', when='@master')
     depends_on('neurodamus-base@mousify', when='@mousify')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
@@ -144,11 +144,21 @@ class Coreneuron(CMakePackage):
             options.append('-DENABLE_CALIPER=ON')
             options.append('-Dcaliper_DIR=%s' % spec['caliper'].prefix.share.cmake.caliper)
 
-        nmodl_options = 'passes --verbatim-rename --inline'
+        nmodl_options = ''
+
+        if '+gpu' in spec:
+            nmodl_options += ' acc --oacc'
+
+        nmodl_options += ' passes --verbatim-rename --inline'
+
+        if spec.satisfies('+sympyopt'):
+            nmodl_options += ' --local-rename --localize '
 
         if spec.satisfies('+ispc'):
             options.append('-DENABLE_ISPC_TARGET=ON')
-            options.append('-DCMAKE_ISPC_FLAGS=-O2 -g --pic --target=avx2-i32x8')
+            math_lib = ' --math-lib=svml' if '%intel' in spec else ' '
+            target = ' --target=avx512knl-i32x16' if '+knl' in spec else ' --target=host'
+            options.append('-DCMAKE_ISPC_FLAGS=-O3 --pic %s %s --opt=force-aligned-memory' % (math_lib, target))
 
         if spec.satisfies('+sympy'):
             nmodl_options += ' sympy --analytic'
