@@ -41,6 +41,9 @@ class Coreneuron(CMakePackage):
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
+    variant('amd', default=False, description="Enable AMD specific flags")
+    variant('arm', default=False, description="Enable ARM specific flags")
+    variant('skl', default=False, description="Enable SKL specific flags")
     variant('knl', default=False, description="Enable KNL specific flags")
     variant('mpi', default=True, description="Enable MPI support")
     variant('openmp', default=False, description="Enable OpenMP support")
@@ -55,6 +58,8 @@ class Coreneuron(CMakePackage):
     variant('ispc', default=False, description="Enable ISPC backend")
     variant('derivimplicit', default=False, description="Enable derivimplicit for glusynapse")
 
+    depends_on('flex')
+    depends_on('bison')
     depends_on('boost', when='+tests')
     depends_on('cmake@3:', type='build')
     depends_on('cuda', when='+gpu')
@@ -98,6 +103,8 @@ class Coreneuron(CMakePackage):
             flags = '-O3 -qtune=qp -qarch=qp -q64 -qhot=simd -qsmp -qthreaded -g'
         if '%intel' in spec:
             flags = '-g -xHost -O2 -qopt-report=5'
+            if '+amd' in spec:
+                flags = '-g -O2 -march=core-avx2'
             if '+knl' in spec:
                 flags = '-g -xMIC-AVX512 -O2 -qopt-report=5'
         if '+gpu' in spec:
@@ -157,7 +164,16 @@ class Coreneuron(CMakePackage):
         if spec.satisfies('+ispc'):
             options.append('-DENABLE_ISPC_TARGET=ON')
             math_lib = ' --math-lib=svml' if '%intel' in spec else ' '
-            target = ' --target=avx512knl-i32x16' if '+knl' in spec else ' --target=host'
+            if '+knl' in spec:
+                target = ' --target=avx512knl-i32x16'
+            elif '+amd' in spec:
+                target = ' --target=avx2-i32x16'
+            elif '+skl' in spec:
+                target = ' --target=avx512skx-i32x16'
+            elif '+arm' in spec:
+                target = ' --target=host'
+            else:
+                target = ' --target=host'
             options.append('-DCMAKE_ISPC_FLAGS=-O3 --pic %s %s --opt=force-aligned-memory' % (math_lib, target))
 
         if spec.satisfies('+sympy'):
