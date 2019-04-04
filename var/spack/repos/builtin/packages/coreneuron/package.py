@@ -38,6 +38,7 @@ class Coreneuron(CMakePackage):
 
     version('develop', git=url, branch='memory-alignment', submodules=True, preferred=True)
     version('0.14', git=url, submodules=True)
+    version('channel-benchmark', git=url, submodules=True)
 
     variant('debug', default=False, description='Build debug with O0')
     variant('gpu', default=False, description="Enable GPU build")
@@ -82,6 +83,13 @@ class Coreneuron(CMakePackage):
     depends_on('neurodamus-base@plasticity', when='@plasticity')
     depends_on('neurodamus-base@plasticity+derivimplicit', when='@plasticity+derivimplicit')
     depends_on('neurodamus-base@hippocampus', when='@hippocampus')
+
+    resource(
+        name='channels',
+        git='ssh://bbpcode.epfl.ch/user/kumbhar/channel-benchmark',
+        #git='file:///Users/kumbhar/workarena/repos/bbp/channel_benchmark',
+        when='@channel-benchmark'
+    )
 
     @run_before('build')
     def profiling_wrapper_on(self):
@@ -209,6 +217,10 @@ class Coreneuron(CMakePackage):
             modlib_dir = self.spec['neurodamus-base'].prefix.lib.modlib
             modfile_list = '%s/coreneuron_modlist.txt' % modlib_dir
             options.append('-DADDITIONAL_MECHS=%s' % modfile_list)
+            options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
+
+        if spec.satisfies('@channel-benchmark'):
+            modlib_dir = self.stage.source_path + '/channel-benchmark/lib/modlib'
             options.append('-DADDITIONAL_MECHPATH=%s' % modlib_dir)
 
         return options
