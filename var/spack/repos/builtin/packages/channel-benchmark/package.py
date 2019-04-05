@@ -25,8 +25,6 @@
 from spack import *
 import os
 import shutil
-import sys
-from contextlib import contextmanager
 
 
 class ChannelBenchmark(Package):
@@ -59,7 +57,9 @@ class ChannelBenchmark(Package):
             arch = os.path.basename(self.neuron_archdir)
             special = os.path.join(arch, 'special')
             assert os.path.isfile(special)
-            shutil.move(os.path.join(arch, 'special'), prefix.bin)
+
+            os.makedirs(prefix.bin)
+            shutil.move(special, prefix.bin)
 
     def setup_environment(self, spack_env, run_env):
         run_env.prepend_path('PATH', self.prefix.bin)
