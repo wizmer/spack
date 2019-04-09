@@ -36,7 +36,7 @@ class Coreneuron(CMakePackage):
     homepage = "https://github.com/BlueBrain/CoreNeuron"
     url      = "https://github.com/BlueBrain/CoreNeuron"
 
-    version('develop', git=url, branch='memory-alignment', submodules=True, preferred=True)
+    version('develop', git=url, branch='pr/caliper_instrument', submodules=True, preferred=True)
     version('0.14', git=url, submodules=True)
     version('channel-benchmark', git=url, submodules=True)
 
@@ -74,10 +74,10 @@ class Coreneuron(CMakePackage):
     depends_on('ispc', when='+ispc')
 
     # Old versions. Required by previous neurodamus package.
-    version('master',      git=url, branch='memory-alignment', submodules=True)
-    version('mousify',     git=url, branch='memory-alignment', submodules=True)
-    version('hippocampus', git=url, branch='memory-alignment', submodules=True)
-    version('plasticity',  git=url, branch='memory-alignment', submodules=True)
+    version('master',      git=url, branch='pr/caliper_instrument', submodules=True)
+    version('mousify',     git=url, branch='pr/caliper_instrument', submodules=True)
+    version('hippocampus', git=url, branch='pr/caliper_instrument', submodules=True)
+    version('plasticity',  git=url, branch='pr/caliper_instrument', submodules=True)
     depends_on('neurodamus-base@master', when='@master')
     depends_on('neurodamus-base@mousify', when='@mousify')
     depends_on('neurodamus-base@plasticity', when='@plasticity')
