@@ -203,8 +203,6 @@ class Tensorflow(Package):
         else:
             bazel('-c', 'opt', '--config=mkl', '//tensorflow/tools/pip_package:build_pip_package')
 
-        bazel('shutdown')
-
         build_pip_package = Executable('bazel-bin/tensorflow/tools/pip_package/build_pip_package')
         build_pip_package('.')
 
