@@ -25,3 +25,6 @@ class Cudnn(Package):
 
     def install(self, spec, prefix):
         install_tree('.', prefix)
+
+    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
+        spack_env.prepend_path('LD_LIBRARY_PATH', self.spec.prefix.lib64)

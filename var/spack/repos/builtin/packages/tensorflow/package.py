@@ -1,6 +1,12 @@
+# Copyright 2013-2019 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
+
 from spack import *
 from glob import glob
 import os
+
 
 class Tensorflow(Package):
     """TensorFlow is an Open Source Software Library for Machine Intelligence"""
@@ -16,7 +22,6 @@ class Tensorflow(Package):
     version('1.3.0',     '01c008c58d206324ef68cd5116a83965')
     version('1.2.0',     '3f15746caabfd2583724258643fd1678')
     version('1.1.0',     'fb745649d33954c97d29b7acaffe7d65')
-    version('1.0.0-rc2', 'a058a7e0ba2b9761cf2420c82d520049')
     version('0.10.0',    'b75cbd494d61a809af5ef25d7fba561b')
 
     depends_on('swig',                          type='build')
@@ -41,7 +46,7 @@ class Tensorflow(Package):
     depends_on('py-wheel',                      type=('build', 'run'))
     depends_on('py-mock@2.0.0:',                type=('build', 'run'))
 
-    depends_on('py-enum34@1.1.6:',              type=('build', 'run'), when='@1.5.0:^python@:3.1')
+    depends_on('py-enum34@1.1.6:',              type=('build', 'run'), when='@1.5.0:^python@:3.3.99')
     depends_on('py-absl-py@0.1.6',              type=('build', 'run'), when='@1.5.0:')
 
     depends_on('py-astor@0.1.6:',               type=('build', 'run'), when='@1.6.0:')
@@ -54,7 +59,6 @@ class Tensorflow(Package):
     depends_on('py-h5py',                       type=('build', 'run'), when='@1.12.0:')
 
     patch('url-zlib.patch',  when='@0.10.0')
-    patch('crosstool.patch', when='@1.0.0-rc2') # auch auf 0.10.0 wenn mit cuda!
 
     variant('gcp', default=False,
             description='Enable Google Cloud Platform Support')
@@ -64,6 +68,7 @@ class Tensorflow(Package):
 
     depends_on('cuda', when='+cuda')
     depends_on('cudnn', when='+cuda')
+    depends_on('nccl', when='+cuda')
 
 
     def install(self, spec, prefix):
@@ -78,25 +83,21 @@ class Tensorflow(Package):
 
         if '+cuda' in spec:
             env['TF_NEED_CUDA'] = '1'
+            env['TF_CUDA_CLANG'] = '0'
+            env['TF_NEED_TENSORRT'] = '0'
             env['TF_CUDA_VERSION'] = str(spec['cuda'].version)
             env['CUDA_TOOLKIT_PATH'] = str(spec['cuda'].prefix)
             env['TF_CUDNN_VERSION'] = str(spec['cudnn'].version)[0]
             env['CUDNN_INSTALL_PATH'] = str(spec['cudnn'].prefix)
-            env['TF_CUDA_COMPUTE_CAPABILITIES'] = '3.5,5.2'
+            env['NCCL_INSTALL_PATH'] = str(spec['nccl'].prefix)
+            env['TF_NCCL_VERSION'] = str(spec['nccl'].version)[0]
+            env['TF_CUDA_COMPUTE_CAPABILITIES'] = '6.0,6.1,7.0'
         else:
             env['TF_NEED_CUDA'] = '0'
             env['TF_CUDA_VERSION'] = ''
             env['CUDA_TOOLKIT_PATH'] = ''
             env['TF_CUDNN_VERSION'] = ''
             env['CUDNN_INSTALL_PATH'] = ''
-
-        if self.spec.satisfies('@1.0.0-rc2:'):
-            env['CC_OPT_FLAGS'] = '-march=x86-64 -mtune=generic'
-            env['TF_NEED_JEMALLOC'] = '0'
-            env['TF_NEED_HDFS'] = '0'
-            env['TF_ENABLE_XLA'] = '0'
-            env['PYTHON_LIB_PATH'] = self.module.site_packages_dir
-            env['TF_NEED_OPENCL'] = '0'
 
         # additional config options starting with version 1.2
         if self.spec.satisfies('@1.2.0:'):
@@ -141,12 +142,14 @@ class Tensorflow(Package):
         #       stay at least also OSX compatible
         # Note: This particular path below /tmp/spack/tmp is required by the visionary container
         #       build flow:
-        tmp_path = env.get('SPACK_TMPDIR', '/tmp/spack') + '/tf'
-        mkdirp(tmp_path)
-        env['TEST_TMPDIR'] = tmp_path
-        env['HOME'] = tmp_path
+        # Note: On BB5 if we use /tmp as TMPDIR then we get "java.io.IOException: No space left on device"
+        # tmp_path = env.get('SPACK_TMPDIR', '/tmp/spack') + '/tf'
+        # mkdirp(tmp_path)
+        # env['TEST_TMPDIR'] = tmp_path
+        # env['HOME'] = tmp_path
 
         configure()
+
 
         # version dependent fixes
         if self.spec.satisfies('@1.3.0:1.5.0'):
@@ -183,16 +186,19 @@ class Tensorflow(Package):
                         'build --action_env TF_NEED_OPENCL_SYCL="0"\n'
                         'build --distinct_host_configuration=false\n'
                         'build --action_env PYTHONPATH="{}"'.format(env['PYTHONPATH']),
-                        '.tf_configure.bazelrc')        
+                        '.tf_configure.bazelrc')
+
         if self.spec.satisfies('@1.12.0:'):
             # add link to spack-installed openssl libs (needed if no system openssl available)
             filter_file('-lssl', '-lssl '+self.spec['openssl'].libs.search_flags, 'third_party/systemlibs/boringssl.BUILD')
             filter_file('-lcrypto', '-lcrypto '+self.spec['openssl'].libs.search_flags, 'third_party/systemlibs/boringssl.BUILD')
 
         if '+cuda' in spec:
-            bazel('-c', 'opt', '--config=cuda', '//tensorflow/tools/pip_package:build_pip_package')
+            # get path for all dependent libraries to avoid issue with linking esp cudnn
+            ld_lib_path = env.get('LD_LIBRARY_PATH')
+            bazel('-c', 'opt', '--config=cuda', '--action_env="LD_LIBRARY_PATH=%s' % ld_lib_path,  '//tensorflow/tools/pip_package:build_pip_package')
         else:
-            bazel('-c', 'opt', '//tensorflow/tools/pip_package:build_pip_package')
+            bazel('-c', 'opt', '--config=mkl', '//tensorflow/tools/pip_package:build_pip_package')
 
         build_pip_package = Executable('bazel-bin/tensorflow/tools/pip_package/build_pip_package')
         build_pip_package(tmp_path)
