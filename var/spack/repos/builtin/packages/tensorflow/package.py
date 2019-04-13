@@ -14,7 +14,8 @@ class Tensorflow(Package):
     homepage = "https://www.tensorflow.org"
     url      = "https://github.com/tensorflow/tensorflow/archive/v0.10.0.tar.gz"
 
-    version('1.12.0',    '48164180a2573e75f1c8dff492a550a0')
+    version('1.13.1',    sha256='7cd19978e6bc7edc2c847bce19f95515a742b34ea5e28e4389dade35348f58ed')
+    version('1.12.0',    '48164180a2573e75f1c8dff492a550a0', preferred=True)
     version('1.9.0',     '3426192cce0f8e070b2010e5bd5695cd')
     version('1.8.0',     'cd45874be9296644471dd43e7da3fbd0')
     version('1.6.0',     '6dc60ac37e49427cd7069968da42c1ac')
@@ -79,6 +80,7 @@ class Tensorflow(Package):
 
         env['PYTHON_BIN_PATH'] = str(spec['python'].prefix.bin) + '/python'
         env['PYTHONUSERBASE'] = str(spec['python'].prefix)
+        env['USE_DEFAULT_PYTHON_LIB_PATH'] = '1'
         env['SWIG_PATH'] = str(spec['swig'].prefix.bin)
         env['GCC_HOST_COMPILER_PATH'] = spack_cc
 
@@ -104,8 +106,8 @@ class Tensorflow(Package):
 
         # additional config options starting with version 1.2
         if self.spec.satisfies('@1.2.0:'):
-            env['TF_NEED_MKL'] = '0'
-            env['TF_NEED_VERBS'] = '0'
+            env['TF_NEED_MKL'] = '1'
+            env['TF_NEED_VERBS'] = '1'
 
         # additional config options starting with version 1.3
         if self.spec.satisfies('@1.3.0:'):
@@ -198,8 +200,9 @@ class Tensorflow(Package):
 
         if '+cuda' in spec:
             # get path for all dependent libraries to avoid issue with linking esp cudnn
-            ld_lib_path = env.get('LD_LIBRARY_PATH')
-            bazel('-c', 'opt', '--config=cuda', '--action_env="LD_LIBRARY_PATH=%s' % ld_lib_path,  '//tensorflow/tools/pip_package:build_pip_package')
+            # ld_lib_path = env.get('LD_LIBRARY_PATH')
+            # bazel('-c', 'opt', '--config=cuda', '--action_env="LD_LIBRARY_PATH=%s"' % ld_lib_path,  '//tensorflow/tools/pip_package:build_pip_package')
+            bazel('-c', 'opt', '--config=cuda',  '//tensorflow/tools/pip_package:build_pip_package')
         else:
             bazel('-c', 'opt', '--config=mkl', '//tensorflow/tools/pip_package:build_pip_package')
 
@@ -217,3 +220,8 @@ class Tensorflow(Package):
         for fn in glob("../tensorflow/tools/pip_package/*"):
             ln('-s', fn, '.')
         setup_py('install', '--prefix={0}'.format(prefix))
+
+    def setup_environment(self, spack_env, run_env):
+        # Note : do not enable skylake yet, see https://github.com/easybuilders/easybuild-easyconfigs/issues/5936
+        opt_flags = "--copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-msse4.2 --copt=-mfpmath=both"
+        spack_env.set('CC_OPT_FLAGS', opt_flags)
