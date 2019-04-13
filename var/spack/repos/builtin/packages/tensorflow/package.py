@@ -78,8 +78,11 @@ class Tensorflow(Package):
             env['TF_NEED_GCP'] = '0'
 
         env['PYTHON_BIN_PATH'] = str(spec['python'].prefix.bin) + '/python'
+        env['PYTHONUSERBASE'] = str(spec['python'].prefix)
         env['SWIG_PATH'] = str(spec['swig'].prefix.bin)
         env['GCC_HOST_COMPILER_PATH'] = spack_cc
+
+        env['TF_ENABLE_XLA'] = '0'
 
         if '+cuda' in spec:
             env['TF_NEED_CUDA'] = '1'
@@ -200,8 +203,10 @@ class Tensorflow(Package):
         else:
             bazel('-c', 'opt', '--config=mkl', '//tensorflow/tools/pip_package:build_pip_package')
 
+        bazel('shutdown')
+
         build_pip_package = Executable('bazel-bin/tensorflow/tools/pip_package/build_pip_package')
-        build_pip_package(tmp_path)
+        build_pip_package('.')
 
         # using setup.py for installation
         # webpage suggests: sudo pip install /tmp/tensorflow_pkg/tensorflow-0.XYZ.whl
