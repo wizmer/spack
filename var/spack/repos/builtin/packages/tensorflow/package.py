@@ -144,7 +144,8 @@ class Tensorflow(Package):
         spec = self.spec
 
         # add libcuda.so to LD_LIBRARY_PATH as build can be triggered on the node without cuda driver
-        spack_env.prepend_path('LD_LIBRARY_PATH', self.spec.prefix.lib64.stubs)
+        if '+cuda' in spec:
+            spack_env.prepend_path('LD_LIBRARY_PATH', spec['cuda'].prefix.lib64.stubs)
 
         # Note : do not enable skylake yet, see https://github.com/easybuilders/easybuild-easyconfigs/issues/5936
         opt_flags = "--copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-msse4.2 --copt=-mfpmath=both"
