@@ -18,7 +18,8 @@ class Libsonata(CMakePackage):
     homepage = "https://github.com/BlueBrain/libsonata"
     git = "https://github.com/BlueBrain/libsonata.git"
 
-    version('develop', git=git, submodules=False)
+    version('develop', git=git, commit='87edb956b4d741b024acea8e57798c742d94708b', submodules=False)
+    #version('develop', git=git, submodules=False)
 
     variant('mpi', default=False, description="Enable MPI backend")
     variant('python', default=False, description="Enable Python bindings")

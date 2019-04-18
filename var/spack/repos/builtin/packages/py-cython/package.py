@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 from spack import *
-
+import os
 
 class PyCython(PythonPackage):
     """The Cython compiler for writing C extensions for the Python language."""
@@ -27,3 +27,7 @@ class PyCython(PythonPackage):
     def command(self):
         """Returns the Cython command"""
         return Executable(self.prefix.bin.cython)
+
+    def setup_environment(self, spack_env, run_env):
+	if self.spec.satisfies('%intel'):
+            spack_env.set('LDSHARED', '%s -shared' % spack_cc)

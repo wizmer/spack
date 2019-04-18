@@ -211,7 +211,9 @@ class PythonPackage(PackageBase):
     def install_args(self, spec, prefix):
         """Arguments to pass to install."""
         args = ['--prefix={0}'.format(prefix)]
-
+        args += ['--install-lib={0}'.format(os.path.join(prefix, 'lib',
+                                            "python{0}".format(self.spec['python'].version.up_to(2)),
+                                            'site-packages'))]
         # This option causes python packages (including setuptools) NOT
         # to create eggs or easy-install.pth files.  Instead, they
         # install naturally into $prefix/pythonX.Y/site-packages.

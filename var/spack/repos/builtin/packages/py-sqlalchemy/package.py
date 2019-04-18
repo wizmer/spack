@@ -5,7 +5,6 @@
 
 from spack import *
 
-
 class PySqlalchemy(PythonPackage):
     """The Python SQL Toolkit and Object Relational Mapper"""
 

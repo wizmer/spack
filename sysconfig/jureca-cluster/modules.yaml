@@ -26,6 +26,7 @@ modules:
       suffixes:
           '+profile': 'profile'
           '^coreneuron+knl': 'knl'
+          '~mpi~binary': 'serial'
       filter:
         environment_blacklist: ['CPATH', 'LIBRARY_PATH']
     naming_scheme: '${PACKAGE}/${VERSION}'
@@ -34,6 +35,7 @@ modules:
       - 'neurodamus'
       - 'neuron'
       - 'py-bluepyopt'
+      - 'py-bluepy'
     blacklist:
       - '%gcc'
       - '%intel'

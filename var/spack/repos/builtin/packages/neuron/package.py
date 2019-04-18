@@ -77,6 +77,8 @@ class Neuron(Package):
     }
 
     filter_compiler_wrappers('*/bin/nrniv_makefile')
+    filter_compiler_wrappers('*/bin/nrnmech_makefile')
+    filter_compiler_wrappers('*/bin/nrnoc_makefile')
 
     def get_neuron_archdir(self):
         """Determine the architecture-specific neuron base directory.
@@ -232,7 +234,7 @@ class Neuron(Package):
         getting embded into nrnivmodl script"""
 
         arch = self.get_neuron_archdir()
-        nrnmakefile = join_path(self.prefix, arch, 'bin/nrniv_makefile')
+        nrnmakefile = join_path(self.prefix, arch, '../share/nrn/libtool')
 
         kwargs = {
             'backup': False,
