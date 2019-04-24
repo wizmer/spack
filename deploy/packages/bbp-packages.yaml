@@ -106,6 +106,7 @@ packages:
       - mpi
     specs:
       - reportinglib
+      - model-neocortex ^neuron~binary
 
   intel-stable-python-parallel:
     target_matrix:
