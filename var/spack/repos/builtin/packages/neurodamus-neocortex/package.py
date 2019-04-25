@@ -19,7 +19,7 @@ class NeurodamusNeocortex(NeurodamusModel):
 
     mech_name = "neocortex"
 
-    @run_before('merge_hoc_mod')
+    @run_before('build_model')
     def prepare_mods(self):
         if self.spec.satisfies('+v5'):
             copy_all('mod/v5', 'mod', copyfunc=copy_all.symlink2)
