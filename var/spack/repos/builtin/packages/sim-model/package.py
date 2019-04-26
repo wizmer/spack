@@ -1,8 +1,5 @@
 # Copyright 2013-2018 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
-#
-# SPDX-License-Identifier: (Apache-2.0 OR MIT)
-
 from spack import *
 from contextlib import contextmanager
 import os, shutil
@@ -14,6 +11,18 @@ class SimModel(Package):
     Simulation models are groups of nmodl mechanisms. These packages are
     deployed as neuron/coreneuron modules (dynamic loadable libraries)
     which are loadable using load_dll() or linked into a "special"
+
+    Specific models packages can be added to spack by simply inheriting from
+    this class and defining basic attributes, e.g.:
+    ```
+    class ModelHippocampus(SimModel):
+        homepage = ""
+        git = "ssh://bbpcode.epfl.ch/sim/models/hippocampus"
+        version('develop', branch='master')
+    ```
+
+    Nevertheless, for them to become full neurodamus packages, they may inherit from
+    NeurodamusModel instead. See neurodamus-xxx packages for examples.
 
     """
     variant('coreneuron',  default=False, description="Enable CoreNEURON Support")
