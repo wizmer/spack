@@ -135,6 +135,7 @@ class SimModel(Package):
 
     # -
     def setup_environment(self, spack_env, run_env):
+        spack_env.unset('LC_ALL')
         run_env.set('LIBNRNMECH_PATH', self.spec.prefix.lib.join('libnrnmech.so'))
         run_env.set('BGLIBPY_MOD_LIBRARY_PATH', self.spec.prefix.lib.join('libnrnmech.so'))
 
