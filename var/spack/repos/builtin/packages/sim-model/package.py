@@ -116,7 +116,7 @@ class SimModel(Package):
     @staticmethod
     def _patch_special(prefix, libname='libnrnmech.so'):
         which('sed')('-i',
-                     's#-dll .*#-dll %s#' % prefix.lib.join(libname),
+                     's#-dll .*#-dll %s "$@"#' % prefix.lib.join(libname),
                      prefix.bin.special)
 
     def _install_src(self, prefix):
