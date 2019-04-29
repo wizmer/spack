@@ -116,6 +116,7 @@ class NeurodamusModel(SimModel):
     def setup_environment(self, spack_env, run_env):
         SimModel.setup_environment(self, spack_env, run_env)
         run_env.set('HOC_LIBRARY_PATH', self.prefix.lib.hoc)
+        run_env.set('NEURON_INIT_MPI', 1)  # Always Init MPI (support python)
 
         if self.spec.satisfies("+python"):
             pylib = self.prefix.lib.python
