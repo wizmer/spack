@@ -33,14 +33,13 @@ class NeurodamusModel(SimModel):
 
     phases = ['build_model', 'merge_hoc_mod', 'build', 'install']
 
-    # -
     def build_model(self, spec, prefix):
-        """Build and install the bare model."""
+        """Build and install the bare model.
+        """
         SimModel.build(self, spec, prefix)
         # Dont install intermediate src. Worse, would move mod
         SimModel.install(self, spec, prefix, install_src=False)
 
-    # -
     def merge_hoc_mod(self, spec, prefix):
         """Add hocs and mods from neurodamus-core.
 
@@ -56,10 +55,9 @@ class NeurodamusModel(SimModel):
                 for aux_mod in core_mods:
                     shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'mod_core')
 
-        copy_all(core_prefix.hoc, 'hoc', symlink2)
-        copy_all(core_prefix.mod, 'mod', symlink2)
+        copy_all(core_prefix.hoc, 'hoc', makelink)
+        copy_all(core_prefix.mod, 'mod', makelink)
 
-    # -
     def build(self, spec, prefix):
         """ Build mod files from with nrnivmodl / nrnivmodl-core.
             To support shared libs, nrnivmodl is also passed RPATH flags.
@@ -73,27 +71,27 @@ class NeurodamusModel(SimModel):
             dep_libs.append('synapsetool')
 
         for dep in dep_libs:
-            link_flag += self._get_lib_flags(dep)
+            link_flag += ' ' + self._get_link_flags(dep)
 
         # If synapsetool is static we have to bring dependencies
         if spec.satisfies('+synapsetool') and spec['synapsetool'].satisfies('~shared'):
             link_flag += ' ' + spec['synapsetool'].package.dependency_libs(spec).joined()
 
         # Override mech_name in order to generate a library with a different name
-        self.mech_name += '_damus'
+        self.mech_name += 'damus'
         self._build_mods('mod', link_flag, include_flag, 'mod_core')
 
-    # -
     def install(self, spec, prefix):
-        """ Install:
-              bin/ <- special and special-core
-              lib/ <- hoc, mod and lib*mech*.so
-              share/ <- neuron & coreneuron mod.c's (modc and modc_core)
-              python/ If neurodamus-core comes with python, create links
+        """Install phase.
+
+        bin/ <- special and special-core
+        lib/ <- hoc, mod and lib*mech*.so
+        share/ <- neuron & coreneuron mod.c's (modc and modc_core)
+        python/ If neurodamus-core comes with python, create links
         """
         # base dest dirs already created by model install
         arch = arch = spec.architecture.target
-        dst_libname = 'libnrnmech_damus.so'
+        dst_libname = 'libnrnmechdamus.so'
         shutil.move(join_path(arch, 'special'), prefix.bin.join('special'))
         shutil.move(arch + "/.libs/libnrnmech.so", prefix.lib.join(dst_libname))
         self._patch_special(prefix, dst_libname)
@@ -127,40 +125,3 @@ class NeurodamusModel(SimModel):
             run_env.prepend_path('PYTHONPATH', pylib)
             run_env.set('NEURODAMUS_PYTHON', pylib)
 
-
-# Aux funcs
-# ---------
-
-def copy_all(src, dst, copyfunc=shutil.copy):
-    """Copies/processes all files in a src dir against a destination dir"""
-    isdir = os.path.isdir
-    for name in os.listdir(src):
-        pth = join_path(src, name)
-        isdir(pth) or copyfunc(pth, dst)
-
-
-def symlink2(src, dst):
-    """Simple alternative to symlink, copy compat"""
-    if os.path.isdir(dst):
-        dst_dir = dst
-        dst = join_path(dst, os.path.basename(src))
-    else:
-        dst_dir = os.path.dirname(dst)
-    if not os.path.isabs(src):
-        src = os.path.relpath(src, dst_dir)  # update path relation
-    # Silently replace links, just like copy replaces files
-    if os.path.islink(dst):
-        os.remove(dst)
-    os.symlink(src, dst)
-
-
-def filter_out(src, dst):
-    """Remove src from dst, copy compat"""
-    fname = join_path(dst, os.path.basename(src))
-    if os.path.exists(fname):
-        os.remove(fname)
-
-
-# Shortcut to extra operators
-copy_all.symlink2 = symlink2
-copy_all.filter_out = filter_out

@@ -36,19 +36,20 @@ class SimModel(Package):
 
     conflicts('^neuron~python', when='+coreneuron')
 
-    # -
     phases = ('build', 'install')
 
-    # The name of the mechanism, which cen be overriden
     mech_name = ''
+    """The name of the mechanism, defined in subclasses"""
 
-    # -
     def build(self, spec, prefix):
+        """Build phase
+        """
         link_flag = '-Wl,-rpath,' + prefix.lib
         self._build_mods('mod', link_flag)
 
-    # -
     def _build_mods(self, mods_location, link_flag='', include_flag='', corenrn_mods=None):
+        """Build shared lib & special from mods in a given path
+        """
         profile_flag = ' -DENABLE_TAU_PROFILER' if '+profile' in self.spec else ''
         include_flag += profile_flag
 
@@ -56,7 +57,7 @@ class SimModel(Package):
             mechlib = self.__build_mods_coreneuron(
                 corenrn_mods or mods_location, link_flag, include_flag)
             # Link neuron special with this mechs lib
-            link_flag += ' ' + mechlib.ld_flags + self._get_lib_flags('coreneuron')
+            link_flag += ' %s %s' % (mechlib.ld_flags, self._get_link_flags('coreneuron'))
             include_flag += ' -DENABLE_CORENEURON'  # only now, otherwise mods assume neuron
 
         with profiling_wrapper_on():
@@ -65,7 +66,6 @@ class SimModel(Package):
         assert os.path.isfile(special)
         return special
 
-    # -
     def __build_mods_coreneuron(self, mods_location, link_flag, include_flag):
         spec = self.spec
         assert os.path.isdir(mods_location), mods_location
@@ -78,24 +78,24 @@ class SimModel(Package):
         assert len(mechlib), "Error creating corenrnmech lib"
         return mechlib
 
-    # -
-    def _get_lib_flags(self, lib_name):
-        """ Helper method to get linking flags similar to spack build, for solid deployments:
-              1. static libs passed via full path
-              2. shared libs passed with -L -l and RPATH flags
-            Attention: This func doesnt handle recursive deps of static libs.
+    def _get_link_flags(self, lib_name):
+        """Helper method to get linking flags similar to spack build, for solid deployments.
+
+        1. static libs passed via full path
+        2. shared libs passed with -L -l and RPATH flags
+        Attention: This func doesnt handle recursive deps of static libs.
         """
         spec = self.spec[lib_name]
         if spec.satisfies('+shared'):  # Prefer shared if both exist
-            return " %s %s" % (spec.libs.rpath_flags, spec.libs.ld_flags)
-        return ' ' + spec.libs.joined()
+            return "%s %s" % (spec.libs.rpath_flags, spec.libs.ld_flags)
+        return spec.libs.joined()
 
-    # -
     def install(self, spec, prefix, install_src=True):
-        """ Install:
-              bin/ <- special and special-core
-              lib/ <- hoc, mod and lib*mech*.so
-              share/ <- neuron & coreneuron mod.c's (modc and modc_core)
+        """Install phase
+
+        bin/ <- special and special-core
+        lib/ <- hoc, mod and lib*mech*.so
+        share/ <- neuron & coreneuron mod.c's (modc and modc_core)
         """
         mkdirp(prefix.bin)
         mkdirp(prefix.lib)
@@ -115,6 +115,8 @@ class SimModel(Package):
 
     @staticmethod
     def _patch_special(prefix, libname='libnrnmech.so'):
+        """Patch bash-based special to point to nrnmech lib inside lib/
+        """
         which('sed')('-i',
                      's#-dll .*#-dll %s "$@"#' % prefix.lib.join(libname),
                      prefix.bin.special)
@@ -133,10 +135,9 @@ class SimModel(Package):
         if self.spec.satisfies('+coreneuron'):
             shutil.move(join_path(arch, 'core/mod2c'), prefix.share.modc_core)
 
-    # -
     def setup_environment(self, spack_env, run_env):
         spack_env.unset('LC_ALL')
-        run_env.set('LIBNRNMECH_PATH', self.spec.prefix.lib.join('libnrnmech.so'))
+        run_env.set('NRNMECH_LIB_PATH', self.spec.prefix.lib.join('libnrnmech.so'))
         run_env.set('BGLIBPY_MOD_LIBRARY_PATH', self.spec.prefix.lib.join('libnrnmech.so'))
 
 
