@@ -74,8 +74,9 @@ class SimModel(Package):
             '-i', include_flag, '-l', link_flag, '-n', self.mech_name,
             '-v', str(spec.version), '-c', mods_location)
         output_dir = spec.architecture.target
-        mechlib = find_libraries("libcorenrnmech*", output_dir)
-        assert len(mechlib), "Error creating corenrnmech lib"
+        expected_name = "libcorenrnmech" + ('_' + self.mech_name if self.mech_name else '')
+        mechlib = find_libraries(expected_name + '*', output_dir)
+        assert len(mechlib.names) == 1, "Error creating corenrnmech lib."
         return mechlib
 
     def _get_link_flags(self, lib_name):
