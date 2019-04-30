@@ -33,6 +33,9 @@ class NeurodamusModel(SimModel):
 
     phases = ['build_model', 'merge_hoc_mod', 'build', 'install']
 
+    _corenrn_modlist = "coreneuron_modlist.txt"
+    _lib_suffix = "_nd"
+
     def build_model(self, spec, prefix):
         """Build and install the bare model.
         """
@@ -51,7 +54,7 @@ class NeurodamusModel(SimModel):
         # If we shall build mods for coreneuron, only bring from core those specified
         if spec.satisfies("+coreneuron"):
             shutil.copytree('mod', 'mod_core', True)
-            with open(core_prefix.mod.join("coreneuron_modlist.txt")) as core_mods:
+            with open(core_prefix.mod.join(self._corenrn_modlist)) as core_mods:
                 for aux_mod in core_mods:
                     shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'mod_core')
 
@@ -78,8 +81,12 @@ class NeurodamusModel(SimModel):
             link_flag += ' ' + spec['synapsetool'].package.dependency_libs(spec).joined()
 
         # Override mech_name in order to generate a library with a different name
-        self.mech_name += '_nd'
+        self.mech_name += self._lib_suffix
         self._build_mods('mod', link_flag, include_flag, 'mod_core')
+
+        # Store flags
+        self._incflags  = "-incflags '{}'\n".format(include_flag)
+        self._loadflags = "-loadflags '{}'\n".format(link_flag)
 
     def install(self, spec, prefix):
         """Install phase.
@@ -91,7 +98,7 @@ class NeurodamusModel(SimModel):
         """
         # base dest dirs already created by model install
         arch = arch = spec.architecture.target
-        dst_libname = 'libnrnmech_nd.so'
+        dst_libname = 'libnrnmech{}.so'.format(self._lib_suffix)
         shutil.move(join_path(arch, 'special'), prefix.bin.join('special'))
         shutil.move(arch + "/.libs/libnrnmech.so", prefix.lib.join(dst_libname))
         self._patch_special(prefix, dst_libname)
@@ -100,8 +107,7 @@ class NeurodamusModel(SimModel):
             install = which('nrnivmech_install.sh', path=".")
             install(prefix)
 
-        # Install moves mods. Dont install src before libs
-        self._install_src(prefix)
+        self._install_src(prefix)  # Will move mods. Must not happen before
 
         if spec.satisfies('+python'):
             py_src = spec['neurodamus-core'].prefix.python
@@ -117,6 +123,10 @@ class NeurodamusModel(SimModel):
         SimModel.setup_environment(self, spack_env, run_env)
         run_env.set('HOC_LIBRARY_PATH', self.prefix.lib.hoc)
         run_env.set('NEURON_INIT_MPI', "1")  # Always Init MPI (support python)
+
+        if hasattr(self, '_incflags'):
+            run_env.set('ND_incflags', self._incflags)
+            run_env.set('ND_loadflags', self._loadflags)
 
         if self.spec.satisfies("+python"):
             pylib = self.prefix.lib.python
