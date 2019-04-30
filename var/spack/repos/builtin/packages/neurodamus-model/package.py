@@ -125,8 +125,8 @@ class NeurodamusModel(SimModel):
         run_env.set('NEURON_INIT_MPI', "1")  # Always Init MPI (support python)
 
         if hasattr(self, '_incflags'):
-            run_env.set('ND_incflags', self._incflags)
-            run_env.set('ND_loadflags', self._loadflags)
+            run_env.set('ND_INCFLAGS', self._incflags)
+            run_env.set('ND_LOADFLAGS', self._loadflags)
 
         if self.spec.satisfies("+python"):
             pylib = self.prefix.lib.python
