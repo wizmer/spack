@@ -1,9 +1,9 @@
 def deployment_directory(parent) {
     def pull = env.ghprbPullId
     if (parent || pull == null) {
-        return "/gpfs/bbp.cscs.ch/apps/hpc/jenkins/"
+        return "/gpfs/bbp.cscs.ch/ssd/tmp_compile/kumbhar/jenkins/"
     } else {
-        return "/gpfs/bbp.cscs.ch/apps/hpc/jenkins/pulls/${pull}"
+        return "/gpfs/bbp.cscs.ch/ssd/tmp_compile/kumbhar/jenkins/pulls/${pull}"
     }
 }
 
