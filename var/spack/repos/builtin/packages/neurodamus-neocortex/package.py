@@ -22,8 +22,8 @@ class NeurodamusNeocortex(NeurodamusModel):
     @run_before('build_model')
     def prepare_mods(self):
         if self.spec.satisfies('+v5'):
-            copy_all('mod/v5', 'mod', makelink)
-        copy_all('mod/v6', 'mod', makelink)
+            copy_all('mod/v5', 'mod', make_link)
+        copy_all('mod/v6', 'mod', make_link)
         # Plasticity
         if self.spec.satisfies('+plasticity'):
-            copy_all('mod/v6/optimized', 'mod', makelink)
+            copy_all('mod/v6/optimized', 'mod', make_link)

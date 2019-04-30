@@ -55,8 +55,8 @@ class NeurodamusModel(SimModel):
                 for aux_mod in core_mods:
                     shutil.copy(core_prefix.mod.join(aux_mod.strip()), 'mod_core')
 
-        copy_all(core_prefix.hoc, 'hoc', makelink)
-        copy_all(core_prefix.mod, 'mod', makelink)
+        copy_all(core_prefix.hoc, 'hoc', make_link)
+        copy_all(core_prefix.mod, 'mod', make_link)
 
     def build(self, spec, prefix):
         """ Build mod files from with nrnivmodl / nrnivmodl-core.
@@ -78,7 +78,7 @@ class NeurodamusModel(SimModel):
             link_flag += ' ' + spec['synapsetool'].package.dependency_libs(spec).joined()
 
         # Override mech_name in order to generate a library with a different name
-        self.mech_name += 'damus'
+        self.mech_name += '_nd'
         self._build_mods('mod', link_flag, include_flag, 'mod_core')
 
     def install(self, spec, prefix):
@@ -91,7 +91,7 @@ class NeurodamusModel(SimModel):
         """
         # base dest dirs already created by model install
         arch = arch = spec.architecture.target
-        dst_libname = 'libnrnmechdamus.so'
+        dst_libname = 'libnrnmech_nd.so'
         shutil.move(join_path(arch, 'special'), prefix.bin.join('special'))
         shutil.move(arch + "/.libs/libnrnmech.so", prefix.lib.join(dst_libname))
         self._patch_special(prefix, dst_libname)
@@ -116,7 +116,7 @@ class NeurodamusModel(SimModel):
     def setup_environment(self, spack_env, run_env):
         SimModel.setup_environment(self, spack_env, run_env)
         run_env.set('HOC_LIBRARY_PATH', self.prefix.lib.hoc)
-        run_env.set('NEURON_INIT_MPI', 1)  # Always Init MPI (support python)
+        run_env.set('NEURON_INIT_MPI', "1")  # Always Init MPI (support python)
 
         if self.spec.satisfies("+python"):
             pylib = self.prefix.lib.python

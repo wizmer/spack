@@ -49,7 +49,7 @@ __all__ = [
     'join_path',
     'mkdirp',
     'copy_all',
-    'makelink',
+    'make_link',
     'remove_dead_links',
     'remove_if_dead_link',
     'remove_linked_tree',
@@ -456,16 +456,17 @@ def copy_all(src, dst, copyfunc=shutil.copy):
         pth = join_path(src, name)
         isdir(pth) or copyfunc(pth, dst)
 
-def makelink(src, dst):
+def make_link(src, dst):
     """Create a symlink in a given destination.
 
-    makelink has copy semantics, i.e. will take the same args and behave
+    make_link is copy compatible i.e. will take the same args and behave
     similarly to shutil.copy except that it will create a soft link instead.
     If destination is a directory then a new symlink is created inside with
     the same name as the original file.
     Relative src paths create a relative symlink (properly relocated) while
     absolute paths crete an abolute-path symlink.
-    If a file already exists in the destination with the same it is deleted before link creation.
+    If another link already exists in the destination with the same it is
+    deleted before link creation.
 
     Args:
         src (str): The path of the file to create a link to
