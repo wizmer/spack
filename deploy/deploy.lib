@@ -269,7 +269,7 @@ EOF
             fi
         done
         if [[ "x${found}" = "xno" ]]; then
-            echo "  []" >> "${conf}"
+            rm -rf "${conf}"
         fi
     fi
 }
