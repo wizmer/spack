@@ -253,13 +253,18 @@ update_chain_config() {
         }
         log "chaining up ${what}"
         for stage in ${chains}; do
-            log "...adding ${stage}"
-            cat << EOF >> "${conf}"
+            local chaindir=$(last_install_dir ${stage})
+            if [[ -d "${chaindir}" ]]; then
+                log "...adding ${stage}"
+                cat << EOF >> "${conf}"
   ${stage}${suffix}:
     install_tree: $(last_install_dir ${stage})
     modules:
       tcl: $(last_install_dir ${stage})/modules
 EOF
+            else
+                log "...no deployment found for ${stage}"
+            fi
         done
     fi
 }
