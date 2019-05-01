@@ -1,7 +1,8 @@
+// vim: syntax=groovy
 def deployment_directory(parent) {
     def pull = env.ghprbPullId
     if (parent || pull == null) {
-        return "/gpfs/bbp.cscs.ch/ssd/tmp_compile/kumbhar/jenkins/"
+        return "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/"
     } else {
         return "/gpfs/bbp.cscs.ch/ssd/tmp_compile/kumbhar/jenkins/pulls/${pull}"
     }
