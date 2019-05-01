@@ -252,9 +252,11 @@ update_chain_config() {
             echo "upstreams:" >> "${conf}"
         }
         log "chaining up ${what}"
+        local found="no"
         for stage in ${chains}; do
             local chaindir=$(last_install_dir ${stage})
             if [[ -d "${chaindir}" ]]; then
+                found="yes"
                 log "...adding ${stage}"
                 cat << EOF >> "${conf}"
   ${stage}${suffix}:
@@ -266,6 +268,9 @@ EOF
                 log "...no deployment found for ${stage}"
             fi
         done
+        if [[ "x${found}" = "xno" ]]; then
+            echo "  []" >> "${conf}"
+        fi
     fi
 }
 
