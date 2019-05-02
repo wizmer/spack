@@ -21,7 +21,7 @@ packages:
       - python
     specs:
       - arrow+parquet+python@0.11.0
-      - neuron~mpi@2018-10
+      - neuron~mpi
 
   intel-stable-serial-python:
     target_matrix:
@@ -31,7 +31,7 @@ packages:
       - compiler
       - python
     specs:
-      - neuron~mpi@2018-10
+      - neuron~mpi
 
   gnu-intel-stable-serial:
     target_matrix:
