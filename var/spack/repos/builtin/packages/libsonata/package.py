@@ -18,7 +18,7 @@ class Libsonata(CMakePackage):
     homepage = "https://github.com/BlueBrain/libsonata"
     git = "https://github.com/BlueBrain/libsonata.git"
 
-    version('develop', git=git, submodules=False)
+    version('develop', git=git, submodules=True)
 
     variant('mpi', default=False, description="Enable MPI backend")
     variant('python', default=False, description="Enable Python bindings")
@@ -34,7 +34,7 @@ class Libsonata(CMakePackage):
 
     def cmake_args(self):
         result = [
-            '-DEXTLIB_FROM_SUBMODULES=OFF',
+            '-DEXTLIB_FROM_SUBMODULES=ON',
         ]
         if self.spec.satisfies('+python'):
             pyspec = self.spec['python']
