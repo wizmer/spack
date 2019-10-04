@@ -49,7 +49,6 @@ git clone https://github.com/BlueBrain/spack.git                     # 1)
 mkdir -p ~/.spack                                                    # 3)
 ln -s /gpfs/bbp.cscs.ch/apps/hpc/jenkins/config/*.yaml ~/.spack      # 4)
 export SPACK_INSTALL_PREFIX=$HOME/software                           # 5)
-
 ```
 
 Steps 1) and 2) are the only mandatory ones, however 3) 4) 5) are necessary to used
