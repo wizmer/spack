@@ -34,7 +34,8 @@ packages:
       - py-entity-management@1.0.20
       - py-jupyter-notebook@4.2.3
       - py-bbp-analysis-framework@1.6.40
-      - py-morph-tool@0.1.14
+      - py-neuroc@0.1.5
+      - py-morph-tool@0.1.15
       - py-neurodamus
 
   gnu-stable-serial-ophiophob:

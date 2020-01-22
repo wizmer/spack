@@ -9,13 +9,26 @@ from spack import *
 class PyNeuroc(PythonPackage):
     """Python library neuron morphology analysis"""
 
-    homepage = "https://github.com/BlueBrain/NeuroM"
-    url = "https://pypi.io/packages/source/n/neurom/neurom-1.4.10.tar.gz"
+    homepage = "https://bbpcode.epfl.ch/code/#/admin/projects/nse/neuroc"
+    git      = "ssh://bbpcode.epfl.ch/nse/NeuroC"
 
-    version('0.1.5', tag='v0.1.5')
+    version('develop', branch='master')
+    version('0.1.5', tag='neuroc-v0.1.5')
     version('0.1.1', sha256='e541f6c8a11826caa2b2d1cf18015a10ec7009f12813edfc2655084c7cf5021b')
 
-    depends_on('py-click@7.0:', type='run')
-    depends_on('py-future@0.16.0:', type='run')
-    depends_on('py-neurom@1.4.14:', type='run')
-    depends_on('py-tqdm@4.8.4:', type='run')
+    depends_on('py-setuptools', type=('build', 'run'))
+
+    depends_on('py-attrs', type='run')
+    depends_on('py-numpy', type='run')
+    depends_on('py-nose', type='run')
+    depends_on('py-tqdm@4.23.4:', type='run')
+    depends_on('py-click', type='run')
+    depends_on('py-pathlib2', type='run')
+    depends_on('py-morphio', type='run')
+    depends_on('py-morph-tool', type='run')
+    depends_on('py-neurom', type='run')
+    # depends_on('py-dash', type='run')
+    # depends_on('py-dash-html-components', type='run')
+    # depends_on('py-dash-core-components', type='run')
+    # depends_on('py-dash-table', type='run')
+    depends_on('py-scikit-learn', type='run')
