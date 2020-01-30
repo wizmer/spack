@@ -17,11 +17,4 @@ class PyBbpMorphologyWorkflow(PythonPackage):
     depends_on('py-setuptools', type=('build', 'run'))
 
     depends_on('py-neuroc', type='run')
-    depends_on('py-numpy', type='run')
-    depends_on('py-nose', type='run')
-    depends_on('py-tqdm@4.23.4:', type='run')
-    depends_on('py-click', type='run')
-    depends_on('py-pathlib2', type='run')
-    depends_on('py-morphio', type='run')
     depends_on('py-morph-tool', type='run')
-    depends_on('py-neurom', type='run')

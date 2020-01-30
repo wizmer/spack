@@ -24,5 +24,5 @@ class PyMorphTool(PythonPackage):
     depends_on('py-click', type='run')
     depends_on('py-functools32', when='^python@:2.99', type='run')
     depends_on('py-morphio', type='run')
-    depends_on('py-numpy', type='run')
+    depends_on('py-pathlib2@2.3.5:', type='run')
     depends_on('py-neurom', type='run', when='@0.1.14:')
