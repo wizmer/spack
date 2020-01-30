@@ -14,6 +14,7 @@ class Morphio(CMakePackage):
     git      = "https://github.com/BlueBrain/MorphIO.git"
 
     version('develop', git=url, submodules=True)
+    version('2.3.4', tag='v2.3.4', submodules=True)
     version('2.2.1', tag='v2.2.1', submodules=True)
     version('2.1.2', tag='v2.1.2', submodules=True)
     version('2.0.8', tag='v2.0.8', submodules=True)
@@ -26,7 +27,8 @@ class Morphio(CMakePackage):
     depends_on('mpi', when='+mpi')
 
     def cmake_args(self):
-        args = ['-DBUILD_BINDINGS:BOOL=OFF']
+        args = ['-DBUILD_BINDINGS:BOOL=ON']
+        args = []
         if self.spec.satisfies("+mpi"):
             args += ['-DCMAKE_C_COMPILER={}'.format(self.spec['mpi'].mpicc),
                      '-DCMAKE_CXX_COMPILER={}'.format(self.spec['mpi'].mpicxx)]
