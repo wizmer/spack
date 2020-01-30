@@ -27,8 +27,7 @@ class Morphio(CMakePackage):
     depends_on('mpi', when='+mpi')
 
     def cmake_args(self):
-        args = ['-DBUILD_BINDINGS:BOOL=ON']
-        args = []
+        args = ['-DBUILD_BINDINGS:BOOL=OFF']
         if self.spec.satisfies("+mpi"):
             args += ['-DCMAKE_C_COMPILER={}'.format(self.spec['mpi'].mpicc),
                      '-DCMAKE_CXX_COMPILER={}'.format(self.spec['mpi'].mpicxx)]
