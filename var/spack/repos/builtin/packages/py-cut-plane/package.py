@@ -24,4 +24,3 @@ class PyCutPlane(PythonPackage):
 
     def patch(self):
         filter_file(".*dash.*", "", "setup.py")
-        filter_file(".*plotly-helper.*", "", "setup.py")
