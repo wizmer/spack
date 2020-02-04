@@ -18,3 +18,4 @@ class PyBbpMorphologyWorkflow(PythonPackage):
 
     depends_on('py-neuroc', type='run')
     depends_on('py-morph-tool', type='run')
+    depends_on('py-morph-repair', type='run')
