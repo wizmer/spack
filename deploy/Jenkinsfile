@@ -30,6 +30,19 @@ def deployment_directory(parent) {
     }
 }
 
+def temporary_directory() {
+    def pull = env.ghprbPullId
+    if (pull == null) {
+        return "${TMPDIR}"
+    } else {
+        def tmpdir = "/gpfs/bbp.cscs.ch/ssd/apps/hpc/jenkins/pulls/${pull}/tmp"
+        dir(tmpdir) {
+            writeFile file: "the_bad_touch", text: "created for convenience"
+        }
+        return tmpdir
+    }
+}
+
 def post_process() {
     dir("${BASEDIR}") {
         def pull = env.ghprbPullId
@@ -100,16 +113,17 @@ pipeline {
     }
 
     environment {
-        DEPLOYMENT_UPSTREAM = deployment_directory(false)
+        DEPLOYMENT_UPSTREAM = deployment_directory(true)
         DEPLOYMENT_ROOT = deployment_directory(false)
         BASEDIR = "${DEPLOYMENT_ROOT}/spack/deploy"
         DOCKERDIR = "${DEPLOYMENT_ROOT}/spack/docker"
+        TMPDIR = temporary_directory()
     }
 
     // Configured via the UI to allow concurrent PR builds
-    // triggers {
-    //     cron('H H(0-7) * * *')
-    // }
+    triggers {
+        cron('H H(0-7) * * *')
+    }
 
     stages {
         stage('Setup') {
@@ -130,7 +144,7 @@ pipeline {
                             git(url: "https://github.com/BlueBrain/spack.git", branch: "develop")
                         }
                         dir("${DEPLOYMENT_ROOT}/spack/etc/spack/licenses") {
-                            git(url: "ssh://bbpcode.epfl.ch/user/kumbhar/spack-licenses")
+                            git(url: "ssh://bbpcode.epfl.ch/hpc/spack-licenses")
                         }
                     }
                 }
@@ -320,7 +334,7 @@ pipeline {
                 stage("Test Modules") {
                     steps {
                         build job: "hpc.module-testing", parameters: [
-                            string(name: "MODULE_SCRIPT_PATH", value: "${DEPLOYMENT_ROOT}/config/2020/modules.sh")
+                            string(name: "MODULE_SCRIPT_PATH", value: "${DEPLOYMENT_ROOT}/config/modules.sh")
                         ]
                     }
                 }

@@ -1,5 +1,8 @@
-# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
+##############################################################################
+# Copyright 2013-2020 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
 import os
 import shutil
 import llnl.util.tty as tty
@@ -17,6 +20,7 @@ class NeurodamusCore(SimModel):
     git      = "ssh://bbpcode.epfl.ch/sim/neurodamus-core"
 
     version('develop', branch='master', get_full_repo=False)
+    version('2.9.2', tag='2.9.2', get_full_repo=False)
     version('2.9.1', tag='2.9.1', get_full_repo=False)
     version('2.9.0', tag='2.9.0', get_full_repo=False)
     version('2.8.0', tag='2.8.0', get_full_repo=False)
@@ -40,7 +44,8 @@ class NeurodamusCore(SimModel):
     # NOTE: Several variants / dependencies come from SimModel
 
     # Note: We dont request link to MPI so that mpicc can do what is best
-    # and dont rpath it so we stay dynamic. 'run' mode will load the same mpi module
+    # and dont rpath it so we stay dynamic.
+    # 'run' mode will load the same mpi module
     depends_on("mpi",  when='+mpi', type=('build', 'run'))
     depends_on("hdf5+mpi", when='+hdf5+mpi')
     depends_on("hdf5~mpi", when='+hdf5~mpi')
@@ -82,7 +87,8 @@ class NeurodamusCore(SimModel):
             os.remove("mod/VecStim.mod")
             os.remove("mod/netstim_inhpoisson.mod")
 
-        # If we shall build mods for coreneuron, only bring from core those specified
+        # If we shall build mods for coreneuron,
+        # only bring from core those specified
         if self.spec.satisfies("+coreneuron"):
             mkdirp("mod_core")
             with open(join_path("mod", _CORENRN_MODLIST_FNAME)) as core_mods:
@@ -102,7 +108,8 @@ class NeurodamusCore(SimModel):
             "+synapsetool": "-DENABLE_SYNTOOL"
         }
 
-        compile_flags = " ".join(flag for variant, flag in variant_to_compile_flag.items()
+        compile_flags = " ".join(flag for variant,
+                                 flag in variant_to_compile_flag.items()
                                  if spec.satisfies(variant))
         self._build_mods('mod', '', compile_flags, 'mod_core')
 

@@ -108,8 +108,10 @@ set_latest() {
     # Set the "latest" symlink to the current deployment date
     what=$1
     source="$(install_dir_name ${what})"
+    local OLD_DEPLOYMENT_DATE="${DEPLOYMENT_DATE}"
     DEPLOYMENT_DATE="latest"
     target="$(install_dir_raw ${what})"
+    DEPLOYMENT_DATE="${OLD_DEPLOYMENT_DATE}"
     if [[ -e "${target}" && ! -L "${target}" ]]; then
         log "link target is not a symlink: ${target}"
         return 1
@@ -266,7 +268,7 @@ update_chain_config() {
   ${stage}${suffix}:
     install_tree: $(last_install_dir ${stage})
     modules:
-      tcl: $(last_install_dir ${stage})/modules
+      tcl: $(last_install_dir ${stage})/modules/tcl
 EOF
         done
     fi
@@ -284,7 +286,7 @@ configure_compilers() {
         # As the input should be sorted by compilers, the module generation
         # will now find the compilers that were used when bootstrapping.
         log "...regenerating module for ${line}"
-        spack module tcl refresh -y --latest ${line}
+        spack module tcl refresh -y --latest --upstream ${line}
         log "...processing ${line}"
         cmd=$(spack module tcl loads --latest ${line}|tail -n 1)
         echo "${cmd}"
@@ -539,7 +541,9 @@ generate_archive_module() {
 EOF
 
     for path in ${modulepaths}; do
-        [ -d "${path}" ] && echo "append-path MODULEPATH \"${path}\""
+        if [ -d "${path}" ]; then
+            echo "append-path MODULEPATH \"${path}\""
+        fi
     done
 }
 
@@ -579,7 +583,7 @@ copy_user_configuration() {
     what="$1"
 
     local source="$(install_dir ${what})/data"
-    local target="${DEPLOYMENT_ROOT}/config/$(date +%Y)"
+    local target="${DEPLOYMENT_ROOT}/config/"
 
     local root="${DEPLOYMENT_ROOT}/modules/all"
 
@@ -594,8 +598,14 @@ copy_user_configuration() {
     cp ${source}/{compilers,.spack/upstreams,packages}.yaml ${target}
 
     rm -f ${target}/modules.{,c}sh
-    echo "module use \"${root}\"" > ${target}/modules.sh
-    echo "module use \"${root}\"" > ${target}/modules.csh
+    echo "export MODULEPATH=\"\${MODULEPATH}\${MODULEPATH:+:}${root}\"" > ${target}/modules.sh
+    cat <<EOF > ${target}/modules.csh
+if ( \$?MODULEPATH ) then
+    setenv MODULEPATH \${MODULEPATH}:${root}
+else
+    setenv MODULEPATH ${root}
+endif
+EOF
 
     ./modules.rb > "${target}/modules.yaml"
 
@@ -673,7 +683,7 @@ EOF
     update_module_path "${what}"
 
     if [[ "${DEPLOYMENT_UPSTREAM:-${DEPLOYMENT_ROOT}}" != "${DEPLOYMENT_ROOT}" ]]; then
-        OLD_DEPLOYMENT_ROOT="${DEPLOYMENT_ROOT}"
+        local OLD_DEPLOYMENT_ROOT="${DEPLOYMENT_ROOT}"
         DEPLOYMENT_ROOT="${DEPLOYMENT_UPSTREAM}"
         export DEPLOYMENT_ROOT
         log "setting up upstream chains, modules"

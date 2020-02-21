@@ -29,14 +29,14 @@ packages:
       - spatial-index@0.2.1
       - spykfunc@0.15.2
       - psp-validation@0.2.1
-      - py-pytouchreader@1.4.3
       # - py-basalt@0.2.4
-      - py-entity-management@1.0.20
+      - py-bbp-analysis-framework@1.6.41
+      - py-entity-management@1.1.0
       - py-jupyter-notebook@4.2.3
-      - py-bbp-analysis-framework@1.6.40
-      - py-neuroc@0.1.5
       - py-morph-tool@0.1.15
+      - py-neuroc@0.1.5
       - py-neurodamus
+      - py-pytouchreader@1.4.3
 
   gnu-stable-serial-ophiophob:
     target_matrix:
@@ -143,7 +143,7 @@ packages:
       - architecture
       - compiler
     specs:
-      - neurodamus-core+common@2.9.1
+      - neurodamus-core+common@2.9.2
       - ultraliser
 
   intel-stable:
@@ -174,7 +174,7 @@ packages:
       - mpi
       - python
     specs:
-      - neurodamus-core~common@2.9.1
+      - neurodamus-core~common@2.9.2
       - neurodamus-neocortex+coreneuron@0.3
       - neurodamus-hippocampus+coreneuron@0.4
       - neurodamus-thalamus+coreneuron@0.3
