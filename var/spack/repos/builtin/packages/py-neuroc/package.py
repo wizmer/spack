@@ -12,7 +12,7 @@ class PyNeuroc(PythonPackage):
 
     homepage = "https://bbpcode.epfl.ch/code/#/admin/projects/nse/neuroc"
     url = "https://bbpcode.epfl.ch/code/#/admin/projects/nse/neuroc"
-    git      = "ssh://bbpcode.epfl.ch/nse/NeuroC"
+    git = "ssh://bbpcode.epfl.ch/nse/NeuroC"
 
     version('develop', branch='master')
     version('0.1.7', tag='neuroc-v0.1.7')
