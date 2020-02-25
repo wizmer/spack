@@ -10,6 +10,7 @@ class PyNeuroc(PythonPackage):
     """Python library neuron morphology analysis"""
 
     homepage = "https://bbpcode.epfl.ch/code/#/admin/projects/nse/neuroc"
+    url = "https://bbpcode.epfl.ch/code/#/admin/projects/nse/neuroc"
     git      = "ssh://bbpcode.epfl.ch/nse/NeuroC"
 
     version('develop', branch='master')
