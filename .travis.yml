@@ -15,36 +15,36 @@ dist: xenial
 jobs:
   fast_finish: true
   include:
-    - stage: 'style checks'
-      python: '3.8'
-      os: linux
-      language: python
-      env: TEST_SUITE=flake8
-# Shell integration with module files
-    - python: '3.8'
-      os: linux
-      language: python
-      env: [ TEST_SUITE=bootstrap ]
-    - python: '2.7'
-      os: linux
-      language: python
-      env: [ TEST_SUITE=unit, COVERAGE=true ]
-    - python: '3.5'
-      os: linux
-      language: python
-      env: TEST_SUITE=unit
+#     - stage: 'style checks'
+#       python: '3.8'
+#       os: linux
+#       language: python
+#       env: TEST_SUITE=flake8
+# # Shell integration with module files
+#     - python: '3.8'
+#       os: linux
+#       language: python
+#       env: [ TEST_SUITE=bootstrap ]
+#     - python: '2.7'
+#       os: linux
+#       language: python
+#       env: [ TEST_SUITE=unit, COVERAGE=true ]
+#     - python: '3.5'
+#       os: linux
+#       language: python
+#       env: TEST_SUITE=unit
     - python: '3.7'
       os: linux
       language: python
       env: TEST_SUITE=unit
-    - python: '3.8'
-      os: linux
-      language: python
-      env: [ TEST_SUITE=unit, COVERAGE=true ]
-    - python: '3.8'
-      os: linux
-      language: python
-      env: TEST_SUITE=doc
+    # - python: '3.8'
+    #   os: linux
+    #   language: python
+    #   env: [ TEST_SUITE=unit, COVERAGE=true ]
+    # - python: '3.8'
+    #   os: linux
+    #   language: python
+    #   env: TEST_SUITE=doc
 
 stages:
   - 'style checks'
