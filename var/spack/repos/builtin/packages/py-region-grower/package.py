@@ -13,11 +13,11 @@ class PyRegionGrower(PythonPackage):
     git      = "ssh://bbpcode.epfl.ch/molecularsystems/region-grower"
 
     version('develop', branch='master')
-    version('0.1.2', tag='region-grower-v0.1.2', preferred=True)
+    version('0.1.5', tag='region-grower-v0.1.5')
 
     depends_on('py-setuptools', type='build')
 
     depends_on('py-click@7.0:', type='run')
     depends_on('py-tqdm@4.0:', type='run')
-    depends_on('py-tns@1.0.8:', type='run')
+    depends_on('py-tns@2.0.4:', type='run')
     depends_on('py-voxcell@2.5:', type='run')
