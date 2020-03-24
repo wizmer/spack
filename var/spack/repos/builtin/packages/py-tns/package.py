@@ -12,7 +12,10 @@ class PyTns(PythonPackage):
     homepage = "https://bbpcode.epfl.ch/code/#/admin/projects/molecularsystems/TNS"
     git      = "ssh://bbpcode.epfl.ch/molecularsystems/TNS"
 
+    version('develop', branch='master')
+    version('space2', branch='space2')
     version('2.0.4', tag='tns-v2.0.4')
+    version('1.0.8', tag='tns-v1.0.8')
 
     depends_on('py-setuptools', type='build')
 
