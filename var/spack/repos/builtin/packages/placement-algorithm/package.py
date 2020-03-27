@@ -18,7 +18,7 @@ class PlacementAlgorithm(PythonPackage):
 
     build_directory = 'python'
 
-    depends_on('py-setuptools', type=('build','run'))
+    depends_on('py-setuptools', type=('build', 'run'))
 
     depends_on('py-lxml', type='run')
     depends_on('py-numpy', type='run')
