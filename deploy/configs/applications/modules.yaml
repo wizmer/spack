@@ -37,7 +37,6 @@ modules:
       - connectome-tools
       - emsim
       - functionalizer
-      - git
       - meshball
       - model-neocortex
       - nest

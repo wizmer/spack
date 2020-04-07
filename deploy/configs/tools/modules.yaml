@@ -35,6 +35,7 @@ modules:
       - doxygen
       - emacs
       - ffmpeg
+      - git
       - hpctoolkit
       - hpe-mpi
       - ior
