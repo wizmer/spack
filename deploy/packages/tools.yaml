@@ -23,6 +23,8 @@ packages:
       - bison@3.0.5
       - blender
       - cmake@3.15.3
+      - darshan-runtime
+      - darshan-util
       - doxygen@1.8.15
       - emacs@26.1
       - environment-modules@3.2.10
@@ -33,6 +35,7 @@ packages:
       - gettext@0.19.8.1
       - git@2.18.0
       - gmp@6.1.2
+      - graphviz@2.42.2
       - help2man@1.47.4
       - hpctoolkit
       - hpe-mpi@2.21

@@ -32,10 +32,13 @@ modules:
       - cmake
       - cuda
       - cudnn
+      - darshan-runtime
+      - darshan-util
       - doxygen
       - emacs
       - ffmpeg
       - git
+      - graphviz
       - hpctoolkit
       - hpe-mpi
       - ior
